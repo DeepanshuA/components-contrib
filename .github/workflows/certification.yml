@@ -241,11 +241,11 @@ jobs:
         if [[ -v CERTIFICATION_FAILURE ]]; then
           exit 1
         fi
-    
+
     - name: Codecov
       uses: codecov/codecov-action@v1
       with:
-        flags: cert
+        flags: cert1
 
     # Upload logs for test analytics to consume
     - name: Upload test results
