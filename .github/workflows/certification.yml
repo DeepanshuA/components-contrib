@@ -206,7 +206,9 @@ jobs:
         set +e
         gotestsum --jsonfile ${{ env.TEST_OUTPUT_FILE_PREFIX }}_certification.json \
           --junitfile ${{ env.TEST_OUTPUT_FILE_PREFIX }}_certification.xml --format standard-verbose -- \
-          -count=1 -timeout=15m -coverprofile=cover.out -covermode=set -coverpkg=${{ env.SOURCE_PATH }}
+          -count=1 -timeout=15m
+
+        go test --coverprofile=cover.out --covermode=set --coverpkg=${{ env.SOURCE_PATH }}
 
         status=$?
         echo "Completed certification tests for ${{ matrix.component }} ... "
