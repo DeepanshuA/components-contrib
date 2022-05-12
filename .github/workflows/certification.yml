@@ -248,7 +248,7 @@ jobs:
       uses: codecov/codecov-action@v2
       with:
         token: ${{ secrets.CODECOV_TOKEN }} # not required for public repo
-        flags: cert
+        flags: cert2
 
     # Upload logs for test analytics to consume
     - name: Upload test results
