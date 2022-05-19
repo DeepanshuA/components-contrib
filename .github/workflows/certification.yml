@@ -206,10 +206,10 @@ jobs:
         set +e
         gotestsum --jsonfile ${{ env.TEST_OUTPUT_FILE_PREFIX }}_certification.json \
           --junitfile ${{ env.TEST_OUTPUT_FILE_PREFIX }}_certification.xml --format standard-verbose -- \
-          -count=1 -timeout=15m
+          --coverprofile=cover.out --covermode=set --coverpkg=github.com/dapr/components-contrib/pubsub/kafka
 
-        go test --coverprofile=cover.out --covermode=set --coverpkg=${{ env.SOURCE_PATH }}
-
+        cat cover.out
+        
         status=$?
         echo "Completed certification tests for ${{ matrix.component }} ... "
         if test $status -ne 0; then
