@@ -197,6 +197,7 @@ jobs:
         git diff --exit-code ./go.mod
         git diff --exit-code ./go.sum
 
+    # Run tests - dummy checkin
     - name: Run tests
       continue-on-error: true
       working-directory: ${{ env.TEST_PATH }}
@@ -208,7 +209,7 @@ jobs:
         gotestsum --jsonfile ${{ env.TEST_OUTPUT_FILE_PREFIX }}_certification.json \
           --junitfile ${{ env.TEST_OUTPUT_FILE_PREFIX }}_certification.xml --format standard-verbose -- \
           --coverprofile=cover.out --covermode=set --coverpkg=${{ env.SOURCE_PATH }}
-
+        
         cat cover.out
         
         status=$?
