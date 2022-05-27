@@ -206,7 +206,7 @@ jobs:
         set +e
         gotestsum --jsonfile ${{ env.TEST_OUTPUT_FILE_PREFIX }}_certification.json \
           --junitfile ${{ env.TEST_OUTPUT_FILE_PREFIX }}_certification.xml --format standard-verbose -- \
-          --coverprofile=cover.out --covermode=set --coverpkg=github.com/dapr/components-contrib/pubsub/kafka
+          --coverprofile=cover.out --covermode=set --coverpkg=${{ env.SOURCE_PATH }}
 
         cat cover.out
         
