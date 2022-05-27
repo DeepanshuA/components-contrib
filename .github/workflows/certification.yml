@@ -251,6 +251,7 @@ jobs:
         git diff --exit-code ./go.mod
         git diff --exit-code ./go.sum
 
+    # Run tests - dummy checkin
     - name: Run tests
       continue-on-error: false
       working-directory: ${{ env.TEST_PATH }}
@@ -280,8 +281,12 @@ jobs:
 >>>>>>> f72148d3 (cat coverage)
 =======
           --coverprofile=cover.out --covermode=set --coverpkg=${{ env.SOURCE_PATH }}
+<<<<<<< HEAD
 >>>>>>> 2c3ac983 (Using Source env variable)
 
+=======
+        
+>>>>>>> b0977028 (Dummy commit)
         cat cover.out
         
         status=$?
