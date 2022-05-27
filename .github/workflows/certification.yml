@@ -201,7 +201,7 @@ jobs:
         TEST_COMPONENT=$(echo ${{ matrix.component }} | sed -E 's/\./\//g')
         export TEST_PATH="${PROJECT_PATH}/tests/certification/${TEST_COMPONENT}"
         echo "TEST_PATH=$TEST_PATH" >> $GITHUB_ENV
-        export SOURCE_PATH="${PROJECT_PATH}/${TEST_COMPONENT}"
+        export SOURCE_PATH="github.com/dapr/components-contrib/${TEST_COMPONENT}"
         echo "SOURCE_PATH=$SOURCE_PATH" >> $GITHUB_ENV
 
     - uses: Azure/login@v1
@@ -257,6 +257,7 @@ jobs:
       run: |
         echo "Running certification tests for ${{ matrix.component }} ... "
 
+        echo "SOURCEPATH=${{ env.SOURCE_PATH }}"
         set +e
         gotestsum --jsonfile ${{ env.TEST_OUTPUT_FILE_PREFIX }}_certification.json \
 <<<<<<< HEAD
