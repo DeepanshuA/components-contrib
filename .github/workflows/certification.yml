@@ -266,6 +266,7 @@ jobs:
           --junitfile ${{ env.TEST_OUTPUT_FILE_PREFIX }}_certification.xml --format standard-verbose -- \
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           -count=1 -timeout=15m -coverprofile=cover.out -covermode=set -coverpkg=${{ env.SOURCE_PATH }}
 >>>>>>> 637f40cf (test coverage report cert)
 =======
@@ -276,6 +277,9 @@ jobs:
 =======
           --coverprofile=cover.out --covermode=set --coverpkg=github.com/dapr/components-contrib/pubsub/kafka
 >>>>>>> f72148d3 (cat coverage)
+=======
+          --coverprofile=cover.out --covermode=set --coverpkg=${{ env.SOURCE_PATH }}
+>>>>>>> 2c3ac983 (Using Source env variable)
 
         cat cover.out
         
