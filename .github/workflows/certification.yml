@@ -260,7 +260,7 @@ jobs:
         git diff --exit-code ./go.mod
         git diff --exit-code ./go.sum
 
-    # Run tests - dummy checkin
+    # Run tests - dummy checkin again
     - name: Run tests
       continue-on-error: false
       working-directory: ${{ env.TEST_PATH }}
