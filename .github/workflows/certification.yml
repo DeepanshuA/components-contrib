@@ -64,6 +64,9 @@ jobs:
         echo "::set-output name=pr-components::$PR_COMPONENTS"
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 0374b934 (Include clud tests too)
     - name: Specify components requiring cloud resources to run
       id: cloud-components
       run: |
@@ -98,6 +101,7 @@ jobs:
           required-secrets: AzureServiceBusConnectionString
         - component: bindings.azure.cosmosdb
           required-secrets: AzureCosmosDBUrl,AzureCosmosDB,AzureCosmosDBCollection,AzureCosmosDBMasterKey,AzureCertificationTenantId,AzureCertificationServicePrincipalClientId,AzureCertificationServicePrincipalClientSecret
+<<<<<<< HEAD
         - component: bindings.azure.eventhubs
           required-secrets: AzureEventHubsBindingsConnectionString,AzureBlobStorageAccount,AzureBlobStorageAccessKey,AzureEventHubsBindingsHub,AzureEventHubsBindingsNamespace,AzureEventHubsBindingsConsumerGroup,AzureCertificationServicePrincipalClientId,AzureCertificationTenantId,AzureCertificationServicePrincipalClientSecret,AzureResourceGroupName,AzureCertificationSubscriptionId,AzureEventHubsBindingsContainer,AzureIotHubEventHubConnectionString,AzureIotHubName,AzureIotHubBindingsConsumerGroup
         - component: pubsub.azure.eventhubs
@@ -150,9 +154,14 @@ jobs:
     #     )
     #     echo "::set-output name=cloud-components::$CRON_COMPONENTS"
 >>>>>>> f35e1e7d (Comment out cloud runs from cert tests)
+=======
+        EOF
+        )
+        echo "::set-output name=cloud-components::$CRON_COMPONENTS"
+>>>>>>> 0374b934 (Include clud tests too)
     outputs:
       pr-components: ${{ steps.pr-components.outputs.pr-components }}
-      # cloud-components: ${{ steps.cloud-components.outputs.cloud-components }}
+      cloud-components: ${{ steps.cloud-components.outputs.cloud-components }}
 
   certification:
     name: ${{ matrix.component }} certification
@@ -168,7 +177,7 @@ jobs:
       fail-fast: false # Keep running even if one component fails
       matrix:
         component: ${{ fromJson(needs.generate-matrix.outputs.pr-components) }}
-        # include: ${{ fromJson(needs.generate-matrix.outputs.cloud-components) }}
+        include: ${{ fromJson(needs.generate-matrix.outputs.cloud-components) }}
 
     steps:
     - name: Set default payload repo and ref
@@ -318,7 +327,7 @@ jobs:
       uses: codecov/codecov-action@v2
       with:
         token: ${{ secrets.CODECOV_TOKEN }} # not required for public repo
-        flags: cert2
+        flags: $(echo ${{ matrix.component }} | sed -E 's/\./\//g')
 
     # Upload logs for test analytics to consume
     - name: Upload test results
