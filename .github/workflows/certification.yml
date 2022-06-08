@@ -210,7 +210,7 @@ jobs:
         TEST_COMPONENT=$(echo ${{ matrix.component }} | sed -E 's/\./\//g')
         export TEST_PATH="${PROJECT_PATH}/tests/certification/${TEST_COMPONENT}"
         echo "TEST_PATH=$TEST_PATH" >> $GITHUB_ENV
-        export SOURCE_PATH="${PROJECT_PATH}/${TEST_COMPONENT}"
+        export SOURCE_PATH="../../../../${TEST_COMPONENT}"
         echo "SOURCE_PATH=$SOURCE_PATH" >> $GITHUB_ENV
 
     - uses: Azure/login@v1
