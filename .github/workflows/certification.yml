@@ -326,6 +326,7 @@ jobs:
     - name: Codecov
       uses: codecov/codecov-action@v2
       with:
+        files: /src/github.com/dapr/components-contrib/*
         token: ${{ secrets.CODECOV_TOKEN }} # not required for public repo
         flags: $(echo ${{ matrix.component }} | sed -E 's/\./\//g')
 
