@@ -252,6 +252,8 @@ jobs:
       run: |
         go mod download
         go install gotest.tools/gotestsum@latest
+        go get github.com/axw/gocov/gocov
+        go get github.com/AlekSi/gocov-xml
 
     - name: Check that go mod tidy is up-to-date
       working-directory: ${{ env.TEST_PATH }}
@@ -269,11 +271,15 @@ jobs:
 
         echo "SOURCEPATH=${{ env.SOURCE_PATH }}"
         set +e
+<<<<<<< HEAD
         gotestsum --jsonfile ${{ env.TEST_OUTPUT_FILE_PREFIX }}_certification.json \
 <<<<<<< HEAD
           --junitfile ${{ env.TEST_OUTPUT_FILE_PREFIX }}_certification.xml --format standard-quiet -- \
           -count=1 -timeout=15m
 =======
+=======
+        gotestsum --jsonfile ${{ env.SOURCE_PATH }}_certification.json \
+>>>>>>> 2d88133e (test coverage xml)
           --junitfile ${{ env.TEST_OUTPUT_FILE_PREFIX }}_certification.xml --format standard-verbose -- \
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -295,7 +301,14 @@ jobs:
 
 =======
         
+<<<<<<< HEAD
 >>>>>>> b0977028 (Dummy commit)
+=======
+        gocov convert cover.out | gocov-xml > coverage.xml
+
+        cat coverage.xml
+        
+>>>>>>> 2d88133e (test coverage xml)
         cat cover.out
         
         status=$?
