@@ -261,7 +261,7 @@ jobs:
       with:
           severity: info
           details: 'Custom details: Somebody set up us the bomb.'
-          text: hello hello
+          text: ${{ cover_per }}
           webhookUrl: ${{ secrets.DEEPANSHU_SERVER_GENERAL_DISCORD_WEBHOOK }}
 
 
