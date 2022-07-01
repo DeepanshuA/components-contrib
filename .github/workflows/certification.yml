@@ -239,7 +239,7 @@ jobs:
         set -e
 
         # Fail the step if we found no test to run
-        if grep -q "\[no test files\]" ${{ env.TEST_OUTPUT_FILE_PREFIX }}_certification.json ; then
+        if grep -q "\[no test files\]" ${{ env.SOURCE_PATH }}_certification.json ; then
           echo "::error:: No certification test file was found for component ${{ matrix.component }}"
           exit -1
         fi
