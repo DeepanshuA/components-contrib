@@ -224,7 +224,8 @@ jobs:
           --junitfile ${{ env.TEST_OUTPUT_FILE_PREFIX }}_certification.xml --format standard-verbose -- \
           -coverprofile=cover.out -covermode=set -coverpkg=${{ env.SOURCE_PATH }}
 
-        export cover_per=$(gocov convert cover.out | gocov report)
+        # export cover_per=$(gocov convert cover.out | gocov report)
+        gocov convert cover.out | gocov report >> abc.txt
         # gocov convert cover.out | gocov report
         # gocov convert cover.out | gocov-xml > coverage.xml
         
@@ -257,12 +258,10 @@ jobs:
 
 
     - name: Test Custom
-      uses: rjstone/discord-webhook-notify@v1
+      uses: tsickert/discord-webhook@v4.0.0
       with:
-          severity: info
-          details: 'Custom details: Somebody set up us the bomb.'
-          text: echo $cover_per
-          webhookUrl: ${{ secrets.DEEPANSHU_SERVER_GENERAL_DISCORD_WEBHOOK }}
+          filename: abc.txt
+          webhook-url: ${{ secrets.DEEPANSHU_SERVER_GENERAL_DISCORD_WEBHOOK }}
 
 
     - name: Codecov
