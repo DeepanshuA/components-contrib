@@ -255,6 +255,16 @@ jobs:
           exit 1
         fi
 
+
+    - name: Test Custom
+      uses: rjstone/discord-webhook-notify@v1
+      with:
+          severity: info
+          details: 'Custom details: Somebody set up us the bomb.'
+          text: hello hello
+          webhookUrl: ${{ secrets.DEEPANSHU_SERVER_GENERAL_DISCORD_WEBHOOK }}
+
+
     - name: Codecov
       uses: codecov/codecov-action@v2
       with:
