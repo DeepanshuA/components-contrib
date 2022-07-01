@@ -224,11 +224,11 @@ jobs:
           --junitfile ${{ env.TEST_OUTPUT_FILE_PREFIX }}_certification.xml --format standard-verbose -- \
           -coverprofile=cover.out -covermode=set -coverpkg=${{ env.SOURCE_PATH }}
 
-        # export cover_per=$(gocov convert cover.out | gocov report)
-        gocov convert cover.out | gocov report >> abc.txt
-        echo "start"
-        cat abc.txt
-        echo "stop"
+        export cover_per=$(gocov convert cover.out | gocov report)
+        # gocov convert cover.out | gocov report >> abc.txt
+        # echo "start"
+        # cat abc.txt
+        # echo "stop"
         # gocov convert cover.out | gocov report
         # gocov convert cover.out | gocov-xml > coverage.xml
         
@@ -261,9 +261,11 @@ jobs:
 
 
     - name: Test Custom
+      run: echo $cover_per >> abc1.txt
+           cat abc1.txt 
       uses: tsickert/discord-webhook@v4.0.0
       with:
-          filename: abc.txt
+          filename: abc1.txt
           webhook-url: ${{ secrets.DEEPANSHU_SERVER_GENERAL_DISCORD_WEBHOOK }}
 
 
