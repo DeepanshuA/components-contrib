@@ -227,7 +227,7 @@ jobs:
         export cover_per=$(gocov convert cover.out | gocov report)
         # gocov convert cover.out | gocov report >> abc.txt
         # echo "start"
-        
+
         # cat abc.txt
         # echo "stop"
         # gocov convert cover.out | gocov report
@@ -262,8 +262,8 @@ jobs:
 
 
     - name: Test Custom
-      run: echo $cover_per >> abc1.txt
-           cat abc1.txt 
+      # run: echo $cover_per >> abc1.txt
+      #      cat abc1.txt 
       uses: tsickert/discord-webhook@v4.0.0
       with:
           filename: abc1.txt
