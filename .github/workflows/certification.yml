@@ -224,7 +224,7 @@ jobs:
           --junitfile ${{ env.TEST_OUTPUT_FILE_PREFIX }}_certification.xml --format standard-verbose -- \
           -coverprofile=cover.out -covermode=set -coverpkg=${{ env.SOURCE_PATH }}
 
-        export cover_per = echo "$(gocov convert cover.out | gocov report)"
+        export cover_per=$(gocov convert cover.out | gocov report)
         # gocov convert cover.out | gocov report
         # gocov convert cover.out | gocov-xml > coverage.xml
         
