@@ -227,6 +227,7 @@ jobs:
         export cover_per=$(gocov convert cover.out | gocov report)
         # gocov convert cover.out | gocov report >> abc.txt
         # echo "start"
+        
         # cat abc.txt
         # echo "stop"
         # gocov convert cover.out | gocov report
