@@ -203,8 +203,8 @@ jobs:
       run: |
         go mod download
         go install gotest.tools/gotestsum@latest
-        go get github.com/axw/gocov/gocov
-        go get github.com/AlekSi/gocov-xml
+        go install github.com/axw/gocov/gocov@latest
+        go install github.com/AlekSi/gocov-xml@latest
 
     - name: Check that go mod tidy is up-to-date
       working-directory: ${{ env.TEST_PATH }}
@@ -224,9 +224,11 @@ jobs:
           --junitfile ${{ env.TEST_OUTPUT_FILE_PREFIX }}_certification.xml --format standard-verbose -- \
           -coverprofile=cover.out -covermode=set -coverpkg=${{ env.SOURCE_PATH }}
 
-        gocov convert cover.out | gocov-xml > coverage.xml
+        export cover_per = echo "$(gocov convert cover.out | gocov report)"
+        # gocov convert cover.out | gocov report
+        # gocov convert cover.out | gocov-xml > coverage.xml
         
-        cat coverage.xml
+        # cat coverage.xml
 
         status=$?
         echo "Completed certification tests for ${{ matrix.component }} ... "
@@ -253,6 +255,21 @@ jobs:
           exit 1
         fi
     
+    - name: Test Custom
+      uses: rjstone/discord-webhook-notify@v1
+      with:
+          severity: info
+          username: CustomUsername
+          color: '#ff00aa'
+          avatarUrl: https://github.githubassets.com/images/modules/logos_page/Octocat.png
+          description: This is a custom description.
+          details: 'Custom details: Somebody set up us the bomb.'
+          footer: This is a footer.
+          text: ${{ cover_per }}
+          webhookUrl: ${{ secrets.DEEPANSHU_SERVER_GENERAL_DISCORD_WEBHOOK }}
+
+
+
     - name: Codecov
       uses: codecov/codecov-action@v2
       with:
