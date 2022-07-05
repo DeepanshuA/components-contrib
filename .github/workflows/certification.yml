@@ -225,6 +225,7 @@ jobs:
           -coverprofile=cover.out -covermode=set -coverpkg=${{ env.SOURCE_PATH }}
 
         export cover_per=$(gocov convert cover.out | gocov report)
+        echo "cover_per=$cover_per" >> $GITHUB_ENV
         # gocov convert cover.out | gocov report >> abc.txt
         # echo "start"
 
