@@ -225,7 +225,8 @@ jobs:
           -coverprofile=cover.out -covermode=set -coverpkg=${{ env.SOURCE_PATH }}
 
         export cover_per=$(gocov convert cover.out | gocov report)
-        echo "cover_per=$cover_per" >> $GITHUB_ENV
+        export cover_per_only=$(echo $cover_per | grep -oP '(?<=Total Coverage:).*')
+        echo "cover_per_only=$cover_per_only" >> $GITHUB_ENV
         # gocov convert cover.out | gocov report >> abc.txt
         # echo "start"
 
@@ -275,7 +276,7 @@ jobs:
         DISCORD_WEBHOOK: ${{ secrets.DEEPANSHU_SERVER_GENERAL_DISCORD_WEBHOOK }}
       uses: Ilshidur/action-discord@master
       with:
-        args: '{{ env.cover_per }}'
+        args: 'Coverage for {{ env.SOURCE_PATH }} is {{ env.cover_per_only }}'
 
 
     - name: Codecov
