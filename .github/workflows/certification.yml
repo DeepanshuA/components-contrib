@@ -276,7 +276,7 @@ jobs:
         DISCORD_WEBHOOK: ${{ secrets.DEEPANSHU_SERVER_GENERAL_DISCORD_WEBHOOK }}
       uses: Ilshidur/action-discord@master
       with:
-        args: 'Coverage for {{ env.SOURCE_PATH }} is {{ env.cover_per_only }}'
+        args: 'Coverage for {{ SOURCE_PATH }} is {{ cover_per_only }}'
 
 
     - name: Codecov
