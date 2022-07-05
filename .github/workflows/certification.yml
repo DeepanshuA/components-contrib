@@ -261,13 +261,20 @@ jobs:
         fi
 
 
-    - name: Test Custom
-      # run: echo $cover_per >> abc1.txt
-      #      cat abc1.txt 
-      uses: tsickert/discord-webhook@v4.0.0
+    # - name: Test Custom
+    #   # run: echo $cover_per >> abc1.txt
+    #   #      cat abc1.txt 
+    #   uses: tsickert/discord-webhook@v4.0.0
+    #   with:
+    #       filename: abc1.txt
+    #       webhook-url: ${{ secrets.DEEPANSHU_SERVER_GENERAL_DISCORD_WEBHOOK }}
+
+    - name: Discord notification
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DEEPANSHU_SERVER_GENERAL_DISCORD_WEBHOOK }}
+      uses: Ilshidur/action-discord@master
       with:
-          filename: abc1.txt
-          webhook-url: ${{ secrets.DEEPANSHU_SERVER_GENERAL_DISCORD_WEBHOOK }}
+        args: '{{ env.cover_per }}'
 
 
     - name: Codecov
