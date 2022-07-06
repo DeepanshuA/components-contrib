@@ -305,6 +305,7 @@ jobs:
   post_job:
     name: Upload Total coverage
     runs-on: ubuntu-latest
+    needs: certification
     steps:
       - uses: actions/checkout@v2
 
