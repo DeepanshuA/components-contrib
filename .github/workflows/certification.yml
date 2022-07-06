@@ -327,10 +327,31 @@ jobs:
           path: path/to/artifact
           
       - name: Display structure of downloaded files
-        run: ls -R
+        run: |
+          ls "${{steps.download.outputs.download-path}}" | while read f; do
+          while read LINE;
+              do
+              crude=$(echo $LINE | cut -d "(" -f2 | cut -d ")" -f1)
+              tempNum=$(echo $crude | cut -d'/' -f1)
+              tempDeno=$(echo $crude | cut -d'/' -f2)
+              num=$(($num+$tempNum))
+              deno=$(($deno+$tempDeno))
+              echo $num
+              echo $deno
+              export num=$(echo $num)
+              echo "num=$num" >> $GITHUB_ENV
+              export deno=$(echo $deno)
+              echo "deno=$deno" >> $GITHUB_ENV
+            done < ${{steps.download.outputs.download-path}}/$f
+          done
+          echo ${{ env.num }}
+          echo ${{ env.deno }}
+          var=$(awk "BEGIN { print ((${{ env.num }} / ${{ env.deno }}) * 100) }")
+          echo $var
+
         #  while read LINE;
         #   do
         #     echo $LINE; 
         #   done < ${{steps.download.outputs.download-path}}/cov.txt
-        working-directory: path/to/artifact
+        # working-directory: path/to/artifact
  
