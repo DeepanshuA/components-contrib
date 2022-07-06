@@ -273,7 +273,6 @@ jobs:
     #       filename: abc1.txt
     #       webhook-url: ${{ secrets.DEEPANSHU_SERVER_GENERAL_DISCORD_WEBHOOK }}
 
-    - name: Upload Coverage
     - uses: actions/upload-artifact@v3
       with:
         name: my-artifact
