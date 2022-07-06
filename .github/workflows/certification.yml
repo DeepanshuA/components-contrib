@@ -224,20 +224,9 @@ jobs:
           --junitfile ${{ env.TEST_OUTPUT_FILE_PREFIX }}_certification.xml --format standard-verbose -- \
           -coverprofile=cover.out -covermode=set -coverpkg=${{ env.SOURCE_PATH }}
 
-        export cover_per=$(gocov convert cover.out | gocov report)
-        export cover_per_only=$(echo $cover_per | grep -oP '(?<=Total Coverage:).*')
+        cover_report=$(gocov convert cover.out | gocov report)
+        export cover_per_only=$(echo $cover_report | grep -oP '(?<=Total Coverage:).*')
         echo "cover_per_only=$cover_per_only" >> $GITHUB_ENV
-        # mkdir -p path/to/artifact
-        # echo ${{ env.cover_per_only }} >> path/to/artifact/cov.txt
-        # gocov convert cover.out | gocov report >> abc.txt
-        # echo "start"
-
-        # cat abc.txt
-        # echo "stop"
-        # gocov convert cover.out | gocov report
-        # gocov convert cover.out | gocov-xml > coverage.xml
-        
-        # cat coverage.xml
 
         status=$?
         echo "Completed certification tests for ${{ matrix.component }} ... "
@@ -273,22 +262,20 @@ jobs:
     #       filename: abc1.txt
     #       webhook-url: ${{ secrets.DEEPANSHU_SERVER_GENERAL_DISCORD_WEBHOOK }}
 
-    - uses: actions/checkout@v2
+    # - uses: actions/checkout@v2
 
-    - run: |
-       mkdir -p path/to/artifact
-       export S_PATH_DOT=$(echo ${{ env.SOURCE_PATH }} |sed 's#/#\.#g')
-       echo "S_PATH_DOT=$S_PATH_DOT" >> $GITHUB_ENV
-       echo "${{ env.cover_per_only }}" >> path/to/artifact/$S_PATH_DOT.txt
+    - name: Prepare Cert Coverage Info
+      run: |
+       mkdir -p path/to/cov_files
+       SOURCE_PATH_LINEAR=$(echo ${{ env.SOURCE_PATH }} |sed 's#/#\.#g')
+       echo "${{ env.cover_per_only }}" >> path/to/cov_files/$SOURCE_PATH_LINEAR.txt
 
-    # - run: echo "${{ env.cover_per_only }}" >> path/to/artifact/cov.txt
-    
-    - uses: actions/upload-artifact@v3
+    # - run: echo "${{ env.cover_per_only }}" >> path/to/cov_files/cov.txt
+    - name: Upload Cert Coverage Info
+      uses: actions/upload-artifact@v3
       with:
-        name: my-artifact
-        path: path/to/artifact
-
-
+        name: cert_cov
+        path: path/to/cov_files
 
     - name: Discord notification
       env:
@@ -297,12 +284,11 @@ jobs:
       with:
         args: 'Coverage for {{ SOURCE_PATH }} is {{ cover_per_only }}'
 
-
     - name: Codecov
       uses: codecov/codecov-action@v2
       with:
         token: ${{ secrets.CODECOV_TOKEN }} # not required for public repo
-        flags: $(echo ${{ matrix.component }} | sed -E 's/\./\//g')
+        # flags: $(echo ${{ matrix.component }} | sed -E 's/\./\//g')
 
     # Upload logs for test analytics to consume
     - name: Upload test results
@@ -318,50 +304,32 @@ jobs:
     needs: certification
     if: always()
     steps:
-      - uses: actions/checkout@v2
-
-      - uses: actions/download-artifact@v3
+      # - uses: actions/checkout@v2
+      - name: Download Certification Test Coverage Per Component
+        uses: actions/download-artifact@v3
         id: download
         with:
-          name: my-artifact
-          path: path/to/artifact
+          name: cert_cov
+          path: path/to/cov_files
           
-      - name: Display structure of downloaded files
+      - name: Calculate total coverage
         run: |
           ls "${{steps.download.outputs.download-path}}" | while read f; do
           while read LINE;
               do
-              crude=$(echo $LINE | cut -d "(" -f2 | cut -d ")" -f1)
-              tempNum=$(echo $crude | cut -d'/' -f1)
-              tempDeno=$(echo $crude | cut -d'/' -f2)
-              export num=$(($num+$tempNum))
-              export deno=$(($deno+$tempDeno))
-              echo $num
-              echo $deno
-              var1=$(awk "BEGIN { print (($num / $deno) * 100) }")
-              echo $var1
-              echo "var1=$var1" >> $GITHUB_ENV
-              # # export num=$(echo $num)
-              # echo "num=$num" >> $GITHUB_ENV
-              # # export deno=$(echo $deno)
-              # echo "deno=$deno" >> $GITHUB_ENV
+              ratio=$(echo $LINE | cut -d "(" -f2 | cut -d ")" -f1)
+              tempNumerator=$(echo $ratio | cut -d'/' -f1)
+              tempDenominator=$(echo $ratio | cut -d'/' -f2)
+              export numerator=$(($numerator+$tempNumerator))
+              export denominator=$(($denominator+$tempDenominator))
+              totalPer=$(awk "BEGIN { print (($numerator / $denominator) * 100) }")
+              echo "totalPer=$totalPer" >> $GITHUB_ENV
             done < ${{steps.download.outputs.download-path}}/$f
           done
-          # echo ${{ env.num }}
-          # echo ${{ env.deno }}
-          # var=$(awk "BEGIN { print ((${{ env.num }} / ${{ env.deno }}) * 100) }")
-          # echo $var
       
-      - name: T Discord notification
+      - name: Final Coverage Discord Notification
         env:
           DISCORD_WEBHOOK: ${{ secrets.DEEPANSHU_SERVER_GENERAL_DISCORD_WEBHOOK }}
         uses: Ilshidur/action-discord@master
         with:
-          args: 'Coverage for Total is {{ var1 }}'
-
-        #  while read LINE;
-        #   do
-        #     echo $LINE; 
-        #   done < ${{steps.download.outputs.download-path}}/cov.txt
-        # working-directory: path/to/artifact
- 
+          args: 'Total Coverage for Certification Tests is {{ totalPer }}' 
