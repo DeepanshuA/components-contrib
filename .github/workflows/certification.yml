@@ -338,16 +338,26 @@ jobs:
               export deno=$(($deno+$tempDeno))
               echo $num
               echo $deno
-              # export num=$(echo $num)
-              echo "num=$num" >> $GITHUB_ENV
-              # export deno=$(echo $deno)
-              echo "deno=$deno" >> $GITHUB_ENV
+              var1=$(awk "BEGIN { print (($num / $deno) * 100) }")
+              echo $var1
+              echo "var1=$var1" >> $GITHUB_ENV
+              # # export num=$(echo $num)
+              # echo "num=$num" >> $GITHUB_ENV
+              # # export deno=$(echo $deno)
+              # echo "deno=$deno" >> $GITHUB_ENV
             done < ${{steps.download.outputs.download-path}}/$f
           done
-          echo ${{ env.num }}
-          echo ${{ env.deno }}
-          var=$(awk "BEGIN { print ((${{ env.num }} / ${{ env.deno }}) * 100) }")
-          echo $var
+          # echo ${{ env.num }}
+          # echo ${{ env.deno }}
+          # var=$(awk "BEGIN { print ((${{ env.num }} / ${{ env.deno }}) * 100) }")
+          # echo $var
+      
+      - name: T Discord notification
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DEEPANSHU_SERVER_GENERAL_DISCORD_WEBHOOK }}
+        uses: Ilshidur/action-discord@master
+        with:
+          args: 'Coverage for Total is {{ var1 }}'
 
         #  while read LINE;
         #   do
