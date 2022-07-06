@@ -323,10 +323,10 @@ jobs:
           path: path/to/artifact
           
       - name: Display structure of downloaded files
-        run: ls -R
-        #  while read LINE;
-        #   do
-        #     echo $LINE; 
-        #   done < ${{steps.download.outputs.download-path}}/cov.out
-        working-directory: path/to/artifact
+        run: |
+         while read LINE;
+          do
+            echo $LINE; 
+          done < ${{steps.download.outputs.download-path}}/cov.txt
+        # working-directory: path/to/artifact
  
