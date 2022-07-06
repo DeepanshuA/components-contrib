@@ -277,7 +277,7 @@ jobs:
 
     - run: mkdir -p path/to/artifact
 
-    - run: echo ${{ env.cover_per_only }} >> path/to/artifact/cov.txt
+    - run: echo "${{ env.cover_per_only }}" >> path/to/artifact/cov.txt
     
     - uses: actions/upload-artifact@v3
       with:
