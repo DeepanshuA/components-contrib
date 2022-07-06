@@ -302,18 +302,18 @@ jobs:
         name: ${{ matrix.component }}_certification_test
         path: ${{ env.TEST_OUTPUT_FILE_PREFIX }}_certification.*
 
-  # post_job:
-  #   name: Upload Total coverage
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v2
+  post_job:
+    name: Upload Total coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
 
-  #     - uses: actions/download-artifact@v3
-  #       with:
-  #         name: my-artifact
-  #         path: path/to/artifact
+      - uses: actions/download-artifact@v3
+        with:
+          name: my-artifact
+          path: path/to/artifact
           
-  #     - name: Display structure of downloaded files
-  #       run: ls -R
-  #       working-directory: path/to/artifact
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: path/to/artifact
  
