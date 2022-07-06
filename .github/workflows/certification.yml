@@ -334,13 +334,13 @@ jobs:
               crude=$(echo $LINE | cut -d "(" -f2 | cut -d ")" -f1)
               tempNum=$(echo $crude | cut -d'/' -f1)
               tempDeno=$(echo $crude | cut -d'/' -f2)
-              num=$(($num+$tempNum))
-              deno=$(($deno+$tempDeno))
+              export num=$(($num+$tempNum))
+              export deno=$(($deno+$tempDeno))
               echo $num
               echo $deno
-              export num=$(echo $num)
+              # export num=$(echo $num)
               echo "num=$num" >> $GITHUB_ENV
-              export deno=$(echo $deno)
+              # export deno=$(echo $deno)
               echo "deno=$deno" >> $GITHUB_ENV
             done < ${{steps.download.outputs.download-path}}/$f
           done
