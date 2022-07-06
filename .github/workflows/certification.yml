@@ -275,9 +275,13 @@ jobs:
 
     - uses: actions/checkout@v2
 
-    - run: mkdir -p path/to/artifact
+    - run: |
+       mkdir -p path/to/artifact
+       export S_PATH_DOT=$(echo ${{ env.SOURCE_PATH }} |sed 's#/#\.#g')
+       echo "S_PATH_DOT=$S_PATH_DOT" >> $GITHUB_ENV
+       echo "${{ env.cover_per_only }}" >> path/to/artifact/$S_PATH_DOT.txt
 
-    - run: echo "${{ env.cover_per_only }}" >> path/to/artifact/cov.txt
+    # - run: echo "${{ env.cover_per_only }}" >> path/to/artifact/cov.txt
     
     - uses: actions/upload-artifact@v3
       with:
@@ -323,10 +327,10 @@ jobs:
           path: path/to/artifact
           
       - name: Display structure of downloaded files
-        run: |
-         while read LINE;
-          do
-            echo $LINE; 
-          done < ${{steps.download.outputs.download-path}}/cov.txt
-        # working-directory: path/to/artifact
+        run: ls -R
+        #  while read LINE;
+        #   do
+        #     echo $LINE; 
+        #   done < ${{steps.download.outputs.download-path}}/cov.txt
+        working-directory: path/to/artifact
  
