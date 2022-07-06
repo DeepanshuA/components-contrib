@@ -228,7 +228,7 @@ jobs:
         export cover_per_only=$(echo $cover_per | grep -oP '(?<=Total Coverage:).*')
         echo "cover_per_only=$cover_per_only" >> $GITHUB_ENV
         mkdir -p path/to/artifact
-        echo ${{ env.cover_per_only }} > path/to/artifact/${{ env.SOURCE_PATH }}.txt
+        echo ${{ env.cover_per_only }} >> path/to/artifact/cov.txt
         # gocov convert cover.out | gocov report >> abc.txt
         # echo "start"
 
@@ -315,6 +315,10 @@ jobs:
           path: path/to/artifact
           
       - name: Display structure of downloaded files
-        run: ls -R
+        run: |
+         while read LINE;
+          do
+            echo $LINE; 
+          done < cov.out
         working-directory: path/to/artifact
  
