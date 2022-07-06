@@ -227,6 +227,8 @@ jobs:
         export cover_per=$(gocov convert cover.out | gocov report)
         export cover_per_only=$(echo $cover_per | grep -oP '(?<=Total Coverage:).*')
         echo "cover_per_only=$cover_per_only" >> $GITHUB_ENV
+        mkdir -p path/to/artifact
+        echo ${{ env.cover_per_only }} > path/to/artifact/${{ env.SOURCE_PATH }}.txt
         # gocov convert cover.out | gocov report >> abc.txt
         # echo "start"
 
@@ -271,6 +273,14 @@ jobs:
     #       filename: abc1.txt
     #       webhook-url: ${{ secrets.DEEPANSHU_SERVER_GENERAL_DISCORD_WEBHOOK }}
 
+    - name: Upload Coverage
+    - uses: actions/upload-artifact@v3
+      with:
+        name: my-artifact
+        path: path/to/artifact
+
+
+
     - name: Discord notification
       env:
         DISCORD_WEBHOOK: ${{ secrets.DEEPANSHU_SERVER_GENERAL_DISCORD_WEBHOOK }}
@@ -292,3 +302,19 @@ jobs:
       with:
         name: ${{ matrix.component }}_certification_test
         path: ${{ env.TEST_OUTPUT_FILE_PREFIX }}_certification.*
+
+  post_job:
+    name: Upload Total coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: my-artifact
+          path: path/to/artifact
+          
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: path/to/artifact
+ 
