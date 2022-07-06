@@ -52,7 +52,7 @@ jobs:
       id: pr-components
       run: |
         PR_COMPONENTS=$(yq -I0 --tojson eval - << EOF
-        - pubsub.kafka
+        # - pubsub.kafka
         - pubsub.rabbitmq
         - pubsub.mqtt
         # - state.redis
@@ -227,8 +227,8 @@ jobs:
         export cover_per=$(gocov convert cover.out | gocov report)
         export cover_per_only=$(echo $cover_per | grep -oP '(?<=Total Coverage:).*')
         echo "cover_per_only=$cover_per_only" >> $GITHUB_ENV
-        mkdir -p path/to/artifact
-        echo ${{ env.cover_per_only }} >> path/to/artifact/cov.txt
+        # mkdir -p path/to/artifact
+        # echo ${{ env.cover_per_only }} >> path/to/artifact/cov.txt
         # gocov convert cover.out | gocov report >> abc.txt
         # echo "start"
 
@@ -273,6 +273,12 @@ jobs:
     #       filename: abc1.txt
     #       webhook-url: ${{ secrets.DEEPANSHU_SERVER_GENERAL_DISCORD_WEBHOOK }}
 
+    - uses: actions/checkout@v2
+
+    - run: mkdir -p path/to/artifact
+
+    - run: echo ${{ env.cover_per_only }} >> path/to/artifact/cov.txt
+    
     - uses: actions/upload-artifact@v3
       with:
         name: my-artifact
