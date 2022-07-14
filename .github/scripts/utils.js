@@ -43,20 +43,34 @@ export async function warnOnCertTestCoverage(github, context, coverageData, thre
     }
 }
 
-export async function calculateTotalCoveragePercentage(certTestCovFolder) {
-  var totalNumerator = 0;
-  var totalDenominator = 0;
-  fs.readdir(certTestCovFolder, (_, files) => {
-    files.forEach(file => {
-      lineReader.eachLine(file,(line,last)=>{
-        var regex= /[^\(\}]+(?=\))/g;
-        var getRatioInsideBraces= line.match(regex);
-        var parts = getRatioInsideBraces[0].split('/');
-        totalNumerator += parts[0];
-        totalDenominator += parts[1];
-      })
+export async function calculateTotalCoveragePercentage(certTest_covFiles) {
+  let totalNumerator = 0;
+  let totalDenominator = 0;
+  let finalPercentage = 0;
+  let filenames = fs.readdirSync(certTest_covFiles);        
+  const parseProviders = () => {
+    return new Promise((accept, _) => {
+      const promises = filenames.map(file => new Promise((resolve, _) => {
+        fs.readFile(certTest_covFiles+ "/" + file, (err, data) => {
+          if (err) throw err;
+          let regex= /[^\(\}]+(?=\))/g;
+          let getRatioInsideBraces= data.toString().match(regex);
+          let parts = getRatioInsideBraces[0].split('/');
+          console.log(parts);
+          totalNumerator = +totalNumerator + +parts[0];
+          totalDenominator = +totalDenominator + +parts[1];
+          console.log(totalNumerator);
+          console.log(totalDenominator);
+          resolve();
+        })
+      }));
+      accept(Promise.all(promises));
     });
-  });
-  var finalPercentage = totalNumerator / (totalDenominator + 1);
-  return finalPercentage;
+  }
+  (async () => {
+      await parseProviders()
+      finalPercentage = +totalNumerator / (+totalDenominator + 1) * 100;
+      console.log("Total percentage is: " + finalPercentage + "%");
+      return finalPercentage;
+  })();
 }
