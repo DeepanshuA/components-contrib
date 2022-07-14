@@ -42,7 +42,7 @@ const fs = require('fs');
 //     }
 // }
 
-async function calculateTotalCoveragePercentage(certTest_covFiles) {
+export async function calculateTotalCoveragePercentage(certTest_covFiles) {
   let totalNumerator = 0;
   let totalDenominator = 0;
   let finalPercentage = 0;
