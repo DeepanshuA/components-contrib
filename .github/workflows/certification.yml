@@ -306,6 +306,7 @@ jobs:
       - name: Set env variable for total coverage step
         run: echo "COV_FILES_PATH=${{steps.download.outputs.download-path}}" >> $GITHUB_ENV
 
+      - uses: actions/checkout@v2
       - name: Calculate total coverage
         uses: actions/github-script@v4
         id: set-result
