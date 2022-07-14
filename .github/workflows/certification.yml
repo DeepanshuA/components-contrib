@@ -254,6 +254,14 @@ jobs:
           exit 1
         fi
 
+    - name: Notify via comment
+      uses: actions/github-script@v4
+      with:
+        github-token: ${{ secrets.DAPR_BOT_TOKEN }}
+        script: |
+          const utils = require('./.github/scripts/utils.js')
+          await utils.warnOnCertTestCoverage(github, context, ${{ env.COVERAGE_DATA }}, 60)
+
     - name: Prepare Cert Coverage Info
       run: |
        mkdir -p tmp/cov_files
@@ -295,22 +303,35 @@ jobs:
         with:
           name: certtest_cov
           path: tmp/cov_files
-          
+
       - name: Calculate total coverage
+        uses: actions/github-script@v6
+        id: set-result
+        with:
+          script: |
+            const utils = require('./.github/scripts/utils.js')
+            return await utils.calculateTotalCoveragePercentage(${{steps.download.outputs.download-path}})
+          result-encoding: string
+      
+      - name: Get result
         run: |
-          ls "${{steps.download.outputs.download-path}}" | while read f; do
-          while read LINE;
-              do
-              ratio=$(echo $LINE | cut -d "(" -f2 | cut -d ")" -f1)
-              tempNumerator=$(echo $ratio | cut -d'/' -f1)
-              tempDenominator=$(echo $ratio | cut -d'/' -f2)
-              export numerator=$(($numerator+$tempNumerator))
-              export denominator=$(($denominator+$tempDenominator))
-              totalPer=$(awk "BEGIN { print (($numerator / $denominator) * 100) }")
-              echo "totalPer=$totalPer" >> $GITHUB_ENV
-            done < ${{steps.download.outputs.download-path}}/$f
-          done
-        continue-on-error: true
+          echo "TOTAL_PER=${{steps.set-result.outputs.result}}" >> $GITHUB_ENV
+
+
+        # run: |
+        #   ls "${{steps.download.outputs.download-path}}" | while read f; do
+        #   while read LINE;
+        #       do
+        #       ratio=$(echo $LINE | cut -d "(" -f2 | cut -d ")" -f1)
+        #       tempNumerator=$(echo $ratio | cut -d'/' -f1)
+        #       tempDenominator=$(echo $ratio | cut -d'/' -f2)
+        #       export numerator=$(($numerator+$tempNumerator))
+        #       export denominator=$(($denominator+$tempDenominator))
+        #       totalPer=$(awk "BEGIN { print (($numerator / $denominator) * 100) }")
+        #       echo "totalPer=$totalPer" >> $GITHUB_ENV
+        #     done < ${{steps.download.outputs.download-path}}/$f
+        #   done
+        # continue-on-error: true
 
       - name: Final Coverage Discord Notification
         env:
@@ -318,4 +339,4 @@ jobs:
         uses: Ilshidur/action-discord@0c4b27844ba47cb1c7bee539c8eead5284ce9fa9
         continue-on-error: true
         with:
-          args: 'Total Coverage for Certification Tests is {{ totalPer }}%' 
+          args: 'Total Coverage for Certification Tests is {{ TOTAL_PER }}%' 
