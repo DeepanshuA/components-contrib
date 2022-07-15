@@ -313,7 +313,7 @@ jobs:
         with:
           script: |
             const utils = require('./.github/scripts/utils.js')
-            return await utils.calculateTotalCoveragePercentage("${{ env.COV_FILES_PATH }}")
+            return await calculateTotalCoveragePercentage("${{ env.COV_FILES_PATH }}")
           result-encoding: string
       
       - name: Get result
