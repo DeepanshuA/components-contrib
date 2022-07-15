@@ -74,5 +74,9 @@ async function calculateTotalCoveragePercentage(certTest_covFiles) {
   })();
 }
 
-exports.calculateTotalCoveragePercentage = calculateTotalCoveragePercentage(certTest_covFiles);
+module.exports = {
+  calculateTotalCoveragePercentage
+};
+
+// exports.calculateTotalCoveragePercentage = calculateTotalCoveragePercentage(certTest_covFiles);
 // exports.otherMethod = function() {};
