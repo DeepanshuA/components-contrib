@@ -56,6 +56,7 @@ func (consumer *consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 				if message != nil {
 					messages = append(messages, message)
 					if len(messages) >= handlerConfig.SubscribeConfig.MaxBulkSubCount {
+						consumer.k.logger.Infof("Max bulk count reached for topic %s", claim.Topic())
 						consumer.flushBulkMessages(claim, messages, session, handlerConfig.BulkHandler, b)
 						messages = messages[:0]
 					}
@@ -63,6 +64,7 @@ func (consumer *consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 				consumer.mutex.Unlock()
 			case <-ticker.C:
 				consumer.mutex.Lock()
+				consumer.k.logger.Infof("Max bulk await duration reached for topic %s", claim.Topic())
 				consumer.flushBulkMessages(claim, messages, session, handlerConfig.BulkHandler, b)
 				messages = messages[:0]
 				consumer.mutex.Unlock()
@@ -109,6 +111,7 @@ func (consumer *consumer) flushBulkMessages(claim sarama.ConsumerGroupClaim,
 	if len(messages) > 0 {
 		if consumer.k.consumeRetryEnabled {
 			if err := retry.NotifyRecover(func() error {
+				consumer.k.logger.Infof("Flushing bulk messages for topic %s", claim.Topic())
 				return consumer.doBulkCallback(session, messages, handler, claim.Topic())
 			}, b, func(err error, d time.Duration) {
 				consumer.k.logger.Warnf("Error processing Kafka bulk messages: %s. Error: %v. Retrying...", claim.Topic(), err)
@@ -118,6 +121,7 @@ func (consumer *consumer) flushBulkMessages(claim sarama.ConsumerGroupClaim,
 				consumer.k.logger.Errorf("Too many failed attempts at processing Kafka message: %s. Error: %v.", claim.Topic(), err)
 			}
 		} else {
+			consumer.k.logger.Infof("Inside non-retry, Flushing bulk messages for topic %s", claim.Topic())
 			err := consumer.doBulkCallback(session, messages, handler, claim.Topic())
 			if err != nil {
 				consumer.k.logger.Errorf("Error processing Kafka message: %s. Error: %v.", claim.Topic(), err)
@@ -131,7 +135,7 @@ func (consumer *consumer) flushBulkMessages(claim sarama.ConsumerGroupClaim,
 func (consumer *consumer) doBulkCallback(session sarama.ConsumerGroupSession,
 	messages []*sarama.ConsumerMessage, handler BulkEventHandler, topic string,
 ) error {
-	consumer.k.logger.Debugf("Processing Kafka bulk message: %s", topic)
+	consumer.k.logger.Infof("Processing Kafka bulk message: %s", topic)
 	messageValues := make([]KafkaBulkMessageEntry, (len(messages)))
 
 	for i, message := range messages {
