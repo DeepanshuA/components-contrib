@@ -15,7 +15,7 @@ limitations under the License.
 package postgresql
 
 import (
-	"database/sql"
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
@@ -27,10 +27,11 @@ import (
 )
 
 type Query struct {
-	query  string
-	params []interface{}
-	limit  int
-	skip   *int64
+	query     string
+	params    []interface{}
+	limit     int
+	skip      *int64
+	tableName string
 }
 
 func (q *Query) VisitEQ(f *query.EQ) (string, error) {
@@ -87,9 +88,9 @@ func (q *Query) visitFilters(op string, filters []query.Filter) (string, error) 
 		}
 	}
 
-	sep := fmt.Sprintf(" %s ", op)
+	sep := " " + op + " "
 
-	return fmt.Sprintf("(%s)", strings.Join(arr, sep)), nil
+	return "(" + strings.Join(arr, sep) + ")", nil
 }
 
 func (q *Query) VisitAND(f *query.AND) (string, error) {
@@ -101,10 +102,10 @@ func (q *Query) VisitOR(f *query.OR) (string, error) {
 }
 
 func (q *Query) Finalize(filters string, qq *query.Query) error {
-	q.query = fmt.Sprintf("SELECT key, value, xmin as etag FROM %s", defaultTableName)
+	q.query = "SELECT key, value, xmin as etag FROM " + q.tableName
 
 	if filters != "" {
-		q.query += fmt.Sprintf(" WHERE %s", filters)
+		q.query += " WHERE " + filters
 	}
 
 	if len(qq.Sort) > 0 {
@@ -116,13 +117,13 @@ func (q *Query) Finalize(filters string, qq *query.Query) error {
 			}
 			q.query += translateFieldToFilter(sortItem.Key)
 			if sortItem.Order != "" {
-				q.query += fmt.Sprintf(" %s", sortItem.Order)
+				q.query += " " + sortItem.Order
 			}
 		}
 	}
 
 	if qq.Page.Limit > 0 {
-		q.query += fmt.Sprintf(" LIMIT %d", qq.Page.Limit)
+		q.query += " LIMIT " + strconv.Itoa(qq.Page.Limit)
 		q.limit = qq.Page.Limit
 	}
 
@@ -131,15 +132,15 @@ func (q *Query) Finalize(filters string, qq *query.Query) error {
 		if err != nil {
 			return err
 		}
-		q.query += fmt.Sprintf(" OFFSET %d", skip)
+		q.query += " OFFSET " + strconv.FormatInt(skip, 10)
 		q.skip = &skip
 	}
 
 	return nil
 }
 
-func (q *Query) execute(logger logger.Logger, db *sql.DB) ([]state.QueryItem, string, error) {
-	rows, err := db.Query(q.query, q.params...)
+func (q *Query) execute(ctx context.Context, logger logger.Logger, db dbquerier) ([]state.QueryItem, string, error) {
+	rows, err := db.Query(ctx, q.query, q.params...)
 	if err != nil {
 		return nil, "", err
 	}
@@ -150,7 +151,7 @@ func (q *Query) execute(logger logger.Logger, db *sql.DB) ([]state.QueryItem, st
 		var (
 			key  string
 			data []byte
-			etag int
+			etag uint32
 		)
 		if err = rows.Scan(&key, &data, &etag); err != nil {
 			return nil, "", err
@@ -158,7 +159,7 @@ func (q *Query) execute(logger logger.Logger, db *sql.DB) ([]state.QueryItem, st
 		result := state.QueryItem{
 			Key:  key,
 			Data: data,
-			ETag: ptr.Of(strconv.Itoa(etag)),
+			ETag: ptr.Of(strconv.FormatUint(uint64(etag), 10)),
 		}
 		ret = append(ret, result)
 	}
@@ -199,7 +200,7 @@ func translateFieldToFilter(key string) string {
 			filterField += ">"
 		}
 
-		filterField += fmt.Sprintf("'%s'", fieldPart)
+		filterField += "'" + fieldPart + "'"
 	}
 
 	return filterField
@@ -208,6 +209,6 @@ func translateFieldToFilter(key string) string {
 func (q *Query) whereFieldEqual(key string, value interface{}) string {
 	position := q.addParamValueAndReturnPosition(value)
 	filterField := translateFieldToFilter(key)
-	query := fmt.Sprintf("%s=$%v", filterField, position)
+	query := filterField + "=$" + strconv.Itoa(position)
 	return query
 }

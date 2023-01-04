@@ -95,12 +95,12 @@ func (f *Firestore) Features() []state.Feature {
 }
 
 // Get retrieves state from Firestore with a key (Always strong consistency).
-func (f *Firestore) Get(req *state.GetRequest) (*state.GetResponse, error) {
+func (f *Firestore) Get(ctx context.Context, req *state.GetRequest) (*state.GetResponse, error) {
 	key := req.Key
 
 	entityKey := datastore.NameKey(f.entityKind, key, nil)
 	var entity StateEntity
-	err := f.client.Get(context.Background(), entityKey, &entity)
+	err := f.client.Get(ctx, entityKey, &entity)
 
 	if err != nil && !errors.Is(err, datastore.ErrNoSuchEntity) {
 		return nil, err
@@ -113,7 +113,8 @@ func (f *Firestore) Get(req *state.GetRequest) (*state.GetResponse, error) {
 	}, nil
 }
 
-func (f *Firestore) setValue(req *state.SetRequest) error {
+// Set saves state into Firestore.
+func (f *Firestore) Set(ctx context.Context, req *state.SetRequest) error {
 	err := state.CheckRequestOptions(req.Options)
 	if err != nil {
 		return err
@@ -130,7 +131,6 @@ func (f *Firestore) setValue(req *state.SetRequest) error {
 	entity := &StateEntity{
 		Value: v,
 	}
-	ctx := context.Background()
 	key := datastore.NameKey(f.entityKind, req.Key, nil)
 
 	_, err = f.client.Put(ctx, key, entity)
@@ -142,13 +142,8 @@ func (f *Firestore) setValue(req *state.SetRequest) error {
 	return nil
 }
 
-// Set saves state into Firestore with retry.
-func (f *Firestore) Set(req *state.SetRequest) error {
-	return state.SetWithOptions(f.setValue, req)
-}
-
-func (f *Firestore) deleteValue(req *state.DeleteRequest) error {
-	ctx := context.Background()
+// Delete performs a delete operation.
+func (f *Firestore) Delete(ctx context.Context, req *state.DeleteRequest) error {
 	key := datastore.NameKey(f.entityKind, req.Key, nil)
 
 	err := f.client.Delete(ctx, key)
@@ -157,11 +152,6 @@ func (f *Firestore) deleteValue(req *state.DeleteRequest) error {
 	}
 
 	return nil
-}
-
-// Delete performs a delete operation.
-func (f *Firestore) Delete(req *state.DeleteRequest) error {
-	return state.DeleteWithOptions(f.deleteValue, req)
 }
 
 func getFirestoreMetadata(meta state.Metadata) (*firestoreMetadata, error) {

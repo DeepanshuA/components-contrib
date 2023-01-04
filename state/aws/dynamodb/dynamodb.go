@@ -14,6 +14,7 @@ limitations under the License.
 package dynamodb
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/binary"
 	"fmt"
@@ -50,6 +51,10 @@ type dynamoDBMetadata struct {
 	TTLAttributeName string `json:"ttlAttributeName"`
 }
 
+const (
+	metadataPartitionKey = "partitionKey"
+)
+
 // NewDynamoDBStateStore returns a new dynamoDB state store.
 func NewDynamoDBStateStore(_ logger.Logger) state.Store {
 	return &StateStore{}
@@ -80,18 +85,18 @@ func (d *StateStore) Features() []state.Feature {
 }
 
 // Get retrieves a dynamoDB item.
-func (d *StateStore) Get(req *state.GetRequest) (*state.GetResponse, error) {
+func (d *StateStore) Get(ctx context.Context, req *state.GetRequest) (*state.GetResponse, error) {
 	input := &dynamodb.GetItemInput{
 		ConsistentRead: aws.Bool(req.Options.Consistency == state.Strong),
 		TableName:      aws.String(d.table),
 		Key: map[string]*dynamodb.AttributeValue{
 			"key": {
-				S: aws.String(req.Key),
+				S: aws.String(populatePartitionMetadata(req.Key, req.Metadata)),
 			},
 		},
 	}
 
-	result, err := d.client.GetItem(input)
+	result, err := d.client.GetItemWithContext(ctx, input)
 	if err != nil {
 		return nil, err
 	}
@@ -134,13 +139,13 @@ func (d *StateStore) Get(req *state.GetRequest) (*state.GetResponse, error) {
 }
 
 // BulkGet performs a bulk get operations.
-func (d *StateStore) BulkGet(req []state.GetRequest) (bool, []state.BulkGetResponse, error) {
+func (d *StateStore) BulkGet(ctx context.Context, req []state.GetRequest) (bool, []state.BulkGetResponse, error) {
 	// TODO: replace with dynamodb.BatchGetItem for performance
 	return false, nil, nil
 }
 
 // Set saves a dynamoDB item.
-func (d *StateStore) Set(req *state.SetRequest) error {
+func (d *StateStore) Set(ctx context.Context, req *state.SetRequest) error {
 	item, err := d.getItemFromReq(req)
 	if err != nil {
 		return err
@@ -166,7 +171,7 @@ func (d *StateStore) Set(req *state.SetRequest) error {
 		input.ConditionExpression = &condExpr
 	}
 
-	_, err = d.client.PutItem(input)
+	_, err = d.client.PutItemWithContext(ctx, input)
 	if err != nil && haveEtag {
 		switch cErr := err.(type) {
 		case *dynamodb.ConditionalCheckFailedException:
@@ -178,11 +183,11 @@ func (d *StateStore) Set(req *state.SetRequest) error {
 }
 
 // BulkSet performs a bulk set operation.
-func (d *StateStore) BulkSet(req []state.SetRequest) error {
+func (d *StateStore) BulkSet(ctx context.Context, req []state.SetRequest) error {
 	writeRequests := []*dynamodb.WriteRequest{}
 
 	if len(req) == 1 {
-		return d.Set(&req[0])
+		return d.Set(ctx, &req[0])
 	}
 
 	for _, r := range req {
@@ -211,7 +216,7 @@ func (d *StateStore) BulkSet(req []state.SetRequest) error {
 	requestItems := map[string][]*dynamodb.WriteRequest{}
 	requestItems[d.table] = writeRequests
 
-	_, e := d.client.BatchWriteItem(&dynamodb.BatchWriteItemInput{
+	_, e := d.client.BatchWriteItemWithContext(ctx, &dynamodb.BatchWriteItemInput{
 		RequestItems: requestItems,
 	})
 
@@ -219,11 +224,11 @@ func (d *StateStore) BulkSet(req []state.SetRequest) error {
 }
 
 // Delete performs a delete operation.
-func (d *StateStore) Delete(req *state.DeleteRequest) error {
+func (d *StateStore) Delete(ctx context.Context, req *state.DeleteRequest) error {
 	input := &dynamodb.DeleteItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
 			"key": {
-				S: aws.String(req.Key),
+				S: aws.String(populatePartitionMetadata(req.Key, req.Metadata)),
 			},
 		},
 		TableName: aws.String(d.table),
@@ -239,7 +244,7 @@ func (d *StateStore) Delete(req *state.DeleteRequest) error {
 		input.ExpressionAttributeValues = exprAttrValues
 	}
 
-	_, err := d.client.DeleteItem(input)
+	_, err := d.client.DeleteItemWithContext(ctx, input)
 	if err != nil {
 		switch cErr := err.(type) {
 		case *dynamodb.ConditionalCheckFailedException:
@@ -251,11 +256,11 @@ func (d *StateStore) Delete(req *state.DeleteRequest) error {
 }
 
 // BulkDelete performs a bulk delete operation.
-func (d *StateStore) BulkDelete(req []state.DeleteRequest) error {
+func (d *StateStore) BulkDelete(ctx context.Context, req []state.DeleteRequest) error {
 	writeRequests := []*dynamodb.WriteRequest{}
 
 	if len(req) == 1 {
-		return d.Delete(&req[0])
+		return d.Delete(ctx, &req[0])
 	}
 
 	for _, r := range req {
@@ -267,7 +272,7 @@ func (d *StateStore) BulkDelete(req []state.DeleteRequest) error {
 			DeleteRequest: &dynamodb.DeleteRequest{
 				Key: map[string]*dynamodb.AttributeValue{
 					"key": {
-						S: aws.String(r.Key),
+						S: aws.String(populatePartitionMetadata(r.Key, r.Metadata)),
 					},
 				},
 			},
@@ -278,7 +283,7 @@ func (d *StateStore) BulkDelete(req []state.DeleteRequest) error {
 	requestItems := map[string][]*dynamodb.WriteRequest{}
 	requestItems[d.table] = writeRequests
 
-	_, e := d.client.BatchWriteItem(&dynamodb.BatchWriteItemInput{
+	_, e := d.client.BatchWriteItemWithContext(ctx, &dynamodb.BatchWriteItemInput{
 		RequestItems: requestItems,
 	})
 
@@ -313,9 +318,10 @@ func (d *StateStore) getClient(metadata *dynamoDBMetadata) (*dynamodb.DynamoDB, 
 
 // getItemFromReq converts a dapr state.SetRequest into an dynamodb item
 func (d *StateStore) getItemFromReq(req *state.SetRequest) (map[string]*dynamodb.AttributeValue, error) {
+	partitionKey := populatePartitionMetadata(req.Key, req.Metadata)
 	value, err := d.marshalToString(req.Value)
 	if err != nil {
-		return nil, fmt.Errorf("dynamodb error: failed to set key %s: %s", req.Key, err)
+		return nil, fmt.Errorf("dynamodb error: failed to set key %s: %s", partitionKey, err)
 	}
 
 	ttl, err := d.parseTTL(req)
@@ -327,9 +333,10 @@ func (d *StateStore) getItemFromReq(req *state.SetRequest) (map[string]*dynamodb
 	if err != nil {
 		return nil, fmt.Errorf("dynamodb error: failed to generate etag: %w", err)
 	}
+
 	item := map[string]*dynamodb.AttributeValue{
 		"key": {
-			S: aws.String(req.Key),
+			S: aws.String(partitionKey),
 		},
 		"value": {
 			S: aws.String(value),
@@ -383,4 +390,14 @@ func (d *StateStore) parseTTL(req *state.SetRequest) (*int64, error) {
 	}
 
 	return nil, nil
+}
+
+// This is a helper to return the partition key to use.  If if metadata["partitionkey"] is present,
+// use that, otherwise use what's in "key".
+func populatePartitionMetadata(key string, requestMetadata map[string]string) string {
+	if val, found := requestMetadata[metadataPartitionKey]; found {
+		return val
+	}
+
+	return key
 }
