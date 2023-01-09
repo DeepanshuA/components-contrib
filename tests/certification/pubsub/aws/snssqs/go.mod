@@ -144,4 +144,4 @@ require (
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
 
-replace github.com/dapr/dapr => github.com/DeepanshuA/dapr v1.6.1-0.20230109055003-ce6dbf12fab1
+replace github.com/dapr/dapr => github.com/DeepanshuA/dapr v1.6.1-0.20230109165600-5713ee41779b
