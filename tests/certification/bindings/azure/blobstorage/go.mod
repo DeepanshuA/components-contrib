@@ -6,7 +6,7 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v0.6.1
 	github.com/dapr/components-contrib v1.9.6
 	github.com/dapr/components-contrib/tests/certification v0.0.0-20211130185200-4918900c09e1
-	github.com/dapr/dapr v1.9.4-0.20230109055003-ce6dbf12fab1
+	github.com/dapr/dapr v1.9.4-0.20221221150048-640772d83bd1
 	github.com/dapr/go-sdk v1.6.0
 	github.com/dapr/kit v0.0.3
 	github.com/stretchr/testify v1.8.1
