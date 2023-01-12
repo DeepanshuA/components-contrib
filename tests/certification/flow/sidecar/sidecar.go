@@ -112,6 +112,7 @@ func (s Sidecar) Start(ctx flow.Context) error {
 		rt: rt,
 	}
 
+	client.rt.SetRunning(true)
 	opts = append(opts, runtime.WithComponentsCallback(func(reg runtime.ComponentRegistry) error {
 		client.ComponentRegistry = reg
 
@@ -145,7 +146,6 @@ func Stop(appID string) flow.Runnable {
 func (s Sidecar) Stop(ctx flow.Context) error {
 	var client *Client
 	if ctx.Get(s.appID, &client) {
-		client.rt.SetRunning(true)
 		client.rt.Shutdown(2 * time.Second)
 
 		return client.rt.WaitUntilShutdown()
