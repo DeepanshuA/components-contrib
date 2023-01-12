@@ -112,7 +112,6 @@ func (s Sidecar) Start(ctx flow.Context) error {
 		rt: rt,
 	}
 
-	client.rt.SetRunning(true)
 	opts = append(opts, runtime.WithComponentsCallback(func(reg runtime.ComponentRegistry) error {
 		client.ComponentRegistry = reg
 
@@ -135,7 +134,7 @@ func (s Sidecar) Start(ctx flow.Context) error {
 	if options.clientCallback != nil {
 		options.clientCallback(&client)
 	}
-
+	client.rt.SetRunning(true)
 	return nil
 }
 
