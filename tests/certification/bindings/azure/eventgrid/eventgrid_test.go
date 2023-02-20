@@ -42,55 +42,48 @@ import (
 	// armeventgrid "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/eventgrid/armeventgrid/v2"
 )
 
-regiterRbacPermissions := func(ctx flow.Context) error {
-	output, err := exec.Command("/bin/sh", "sp_rbac_permissions.sh").Output()
-	assert.Nil(t, err, "Error in sp_rbac_permissions.sh.:\n%s", string(output))
-	return nil
+
+
+basicTest := func(ctx flow.Context) error {
+	client, err := client.NewClientWithPort(fmt.Sprint(currentGrpcPort))
+	if err != nil {
+		panic(err)
+	}
+	defer client.Close()
 }
 
-// basicTest := func(ctx flow.Context) error {
-// 	client, err := client.NewClientWithPort(fmt.Sprint(currentGrpcPort))
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	defer client.Close()
-// }
+sendAndReceive := func(metadata map[string]string, messages ...*watcher.Watcher) flow.Runnable {
+	return func(ctx flow.Context) error {
+		client, err := daprsdk.NewClientWithPort(strconv.Itoa(grpcPort))
+		require.NoError(t, err, "dapr init failed")
 
-// sendAndReceive := func(metadata map[string]string, messages ...*watcher.Watcher) flow.Runnable {
-// 	_, hasKey := metadata[messageKey]
-// 	return func(ctx flow.Context) error {
-// 		client, err := daprsdk.NewClientWithPort(strconv.Itoa(grpcPort))
-// 		require.NoError(t, err, "dapr init failed")
+		// Define what is expected
+		outputmsg := make([]string, numMessages)
+		for i := 0; i < numMessages; i++ {
+			outputmsg[i] = fmt.Sprintf("output binding: Message %03d", i)
+		}
+		received.ExpectStrings(outputmsg...)
+		time.Sleep(20 * time.Second)
 
-// 		// Define what is expected
-// 		outputmsg := make([]string, numMessages)
-// 		for i := 0; i < numMessages; i++ {
-// 			outputmsg[i] = fmt.Sprintf("output binding: Message %03d", i)
-// 		}
-// 		received.ExpectStrings(outputmsg...)
-// 		time.Sleep(20 * time.Second)
-// 		if !hasKey {
-// 			metadata[messageKey] = uuid.NewString()
-// 		}
-// 		// Send events from output binding
-// 		for _, msg := range outputmsg {
-// 			ctx.Logf("Sending eventhub message: %q", msg)
+		// Send events from output binding
+		for _, msg := range outputmsg {
+			ctx.Logf("Sending eventgrid messages: %q", msg)
 
-// 			err := client.InvokeOutputBinding(
-// 				ctx, &dapr.InvokeBindingRequest{
-// 					Name:      "azure-eventhubs-binding",
-// 					Operation: "create",
-// 					Data:      []byte(msg),
-// 					Metadata:  metadata,
-// 				})
-// 			require.NoError(ctx, err, "error publishing message")
-// 		}
+			err := client.InvokeOutputBinding(
+				ctx, &dapr.InvokeBindingRequest{
+					Name:      "azure-eventgrid",
+					Operation: "create",
+					Data:      [{"id": "1", "eventType": "recordInserted", "subject": "myapp/vehicles/motorcycles", "eventTime": "2023-02-15 10:40:47 AM", "data":{ "make": "HondaCity", "model": "Monster"},"dataVersion": "1.0"}],
+					// Metadata:  metadata,
+				})
+			require.NoError(ctx, err, "error publishing message")
+		}
 
-// 		// Assert the observed messages
-// 		received.Assert(ctx, time.Minute)
-// 		return nil
-// 	}
-// }
+		// Assert the observed messages
+		received.Assert(ctx, time.Minute)
+		return nil
+	}
+}
 
 func TestEventGrid(t *testing.T) {
 	ports, err := dapr_testing.GetFreePorts(2)
@@ -98,6 +91,12 @@ func TestEventGrid(t *testing.T) {
 
 	currentGRPCPort := ports[0]
 	currentHTTPPort := ports[1]
+
+	regiterRbacPermissions := func(ctx flow.Context) error {
+		output, err := exec.Command("/bin/sh", "sp_rbac_permissions.sh").Output()
+		assert.Nil(t, err, "Error in sp_rbac_permissions.sh.:\n%s", string(output))
+		return nil
+	}
 
 	flow.New(t, "eventgrid binding authentication using service principal").
 		Step("Register Rbac permissions", regiterRbacPermissions).
