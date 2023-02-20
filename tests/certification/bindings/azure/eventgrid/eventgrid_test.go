@@ -95,7 +95,7 @@ func TestEventGrid(t *testing.T) {
 
 	regiterRbacPermissions := func(ctx flow.Context) error {
 		output, err := exec.Command("/bin/sh", "sp_rbac_permissions.sh").Output()
-		assert.Nil(t, err, "Error in sp_rbac_permissions.sh.:\n%s", string(err))
+		assert.Nil(t, err, "Error in sp_rbac_permissions.sh.:\n%v; %s", err, string(output))
 		return nil
 	}
 
