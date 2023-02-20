@@ -14,24 +14,25 @@ limitations under the License.
 package azureeventgrid_test
 
 import (
-	"fmt"
-	"io"
-	"net/http"
-	"os"
+	// "fmt"
+	// "io"
+	// "net/http"
+	// "os"
 	"os/exec"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/dapr/components-contrib/bindings"
 	eventgridbinding "github.com/dapr/components-contrib/bindings/azure/eventgrid"
 	secretstore_env "github.com/dapr/components-contrib/secretstores/local/env"
 	bindings_loader "github.com/dapr/dapr/pkg/components/bindings"
 	secretstores_loader "github.com/dapr/dapr/pkg/components/secretstores"
 	"github.com/dapr/dapr/pkg/runtime"
 	dapr_testing "github.com/dapr/dapr/pkg/testing"
-	daprsdk "github.com/dapr/go-sdk/client"
+	// daprsdk "github.com/dapr/go-sdk/client"
 	"github.com/dapr/kit/logger"
-	"github.com/dapr/kit/ptr"
+	// "github.com/dapr/kit/ptr"
 
 	"github.com/dapr/components-contrib/tests/certification/embedded"
 	"github.com/dapr/components-contrib/tests/certification/flow"
