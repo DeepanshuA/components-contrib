@@ -112,6 +112,8 @@ jobs:
           required-secrets: AzureCosmosDBUrl,AzureCosmosDB,AzureCosmosDBCollection,AzureCosmosDBMasterKey,AzureCertificationTenantId,AzureCertificationServicePrincipalClientId,AzureCertificationServicePrincipalClientSecret
         - component: bindings.azure.eventhubs
           required-secrets: AzureEventHubsBindingsConnectionString,AzureBlobStorageAccount,AzureBlobStorageAccessKey,AzureEventHubsBindingsHub,AzureEventHubsBindingsNamespace,AzureEventHubsBindingsConsumerGroup,AzureCertificationServicePrincipalClientId,AzureCertificationTenantId,AzureCertificationServicePrincipalClientSecret,AzureResourceGroupName,AzureCertificationSubscriptionId,AzureEventHubsBindingsContainer,AzureIotHubEventHubConnectionString,AzureIotHubName,AzureIotHubBindingsConsumerGroup
+        - component: bindings.azure.eventgrid
+          required-secrets: AzureEventGridAccessKey,AzureEventGridClientId,AzureEventGridClientSecret,AzureEventGridNgrokToken,AzureEventGridScope,AzureEventGridSubscriptionId,AzureEventGridTenantId,AzureEventGridTopicEndpoint
         - component: pubsub.azure.eventhubs
           required-secrets: AzureEventHubsPubsubTopicActiveConnectionString,AzureEventHubsPubsubNamespace,AzureEventHubsPubsubNamespaceConnectionString,AzureBlobStorageAccount,AzureBlobStorageAccessKey,AzureEventHubsPubsubContainer,AzureIotHubName,AzureIotHubEventHubConnectionString,AzureCertificationTenantId,AzureCertificationServicePrincipalClientId,AzureCertificationServicePrincipalClientSecret,AzureResourceGroupName,AzureCertificationSubscriptionId
         - component: pubsub.azure.servicebus.topics
