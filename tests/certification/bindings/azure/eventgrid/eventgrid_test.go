@@ -86,12 +86,12 @@ import (
 // }
 
 func TestEventGrid(t *testing.T) {
-	ports, err := dapr_testing.GetFreePorts(3)
+	ports, err := dapr_testing.GetFreePorts(2)
 	assert.NoError(t, err)
 
 	currentGRPCPort := ports[0]
 	currentHTTPPort := ports[1]
-	appPort := ports[2]
+	// appPort := ports[2]
 
 	regiterRbacPermissions := func(ctx flow.Context) error {
 		output, err := exec.Command("/bin/sh", "sp_rbac_permissions.sh").Output()
@@ -102,7 +102,7 @@ func TestEventGrid(t *testing.T) {
 	flow.New(t, "eventgrid binding authentication using service principal").
 		Step("Register Rbac permissions", regiterRbacPermissions).
 		Step(sidecar.Run("sidecar",
-			embedded.WithAppProtocol(runtime.HTTPProtocol, appPort),
+			embedded.WithoutApp(),
 			embedded.WithDaprGRPCPort(currentGRPCPort),
 			embedded.WithDaprHTTPPort(currentHTTPPort),
 			embedded.WithComponentsPath("./components/serviceprincipal"),
