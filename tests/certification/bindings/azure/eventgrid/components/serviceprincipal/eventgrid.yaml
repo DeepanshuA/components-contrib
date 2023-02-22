@@ -22,7 +22,7 @@ spec:
   - name: subscriberEndpoint
     value: ${{AzureEventGridSubscriberEndpoint}}
   - name: handshakePort
-    value: "9000"
+    value: 9000
   - name: scope
     value: ${{AzureEventGridScope}}
   # Required Output Binding Metadata
