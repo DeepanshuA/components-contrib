@@ -47,6 +47,8 @@ const components = {
         ],
         conformanceSetup: 'conformance-bindings.azure.eventgrid-setup.sh',
         conformanceDestroy: 'conformance-bindings.azure.eventgrid-destroy.sh',
+        certificationSetup: 'conformance-bindings.azure.eventgrid-setup.sh',
+        certificationDestroy: 'conformance-bindings.azure.eventgrid-destroy.sh',
     },
     'bindings.azure.eventhubs': {
         conformance: true,
