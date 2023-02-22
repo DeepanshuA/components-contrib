@@ -8,13 +8,15 @@ spec:
   version: v1
   metadata:
   # Required Input Binding Metadata
-  - name: tenantId
+  - name: eventSubscriptionName
+    value: "newSub001"
+  - name: azureTenantId
     value: ${{AzureEventGridTenantId}}
-  - name: subscriptionId
+  - name: azureSubscriptionId
     value: ${{AzureEventGridSubscriptionId}}
-  - name: clientId
+  - name: azureClientId
     value: ${{AzureEventGridClientId}}
-  - name: clientSecret
+  - name: azureClientSecret
     value: ${{AzureEventGridClientSecret}}
   # Generated dynamically when starting ngrok
   - name: subscriberEndpoint
