@@ -262,6 +262,7 @@ echo "Created Service Principal for cert auth: ${CERT_AUTH_SP_NAME}"
 if [[ -n ${CREDENTIALS_PATH} ]]; then
     SDK_AUTH_SP_INFO="$(cat ${CREDENTIALS_PATH})"
     SDK_AUTH_SP_APPID="$(echo "${SDK_AUTH_SP_INFO}" | jq -r '.clientId')"
+    echo "SDK_AUTH_SP_APPID: " ${SDK_AUTH_SP_APPID}
     SDK_AUTH_SP_CLIENT_SECRET="$(echo "${SDK_AUTH_SP_INFO}" | jq -r '.clientSecret')"
     if [[ -z ${SDK_AUTH_SP_APPID} || -z ${SDK_AUTH_SP_CLIENT_SECRET} ]]; then
         echo "Invalid credentials JSON file. Contents should match output of 'az ad sp create-for-rbac' command."
@@ -292,6 +293,7 @@ echo "Building conf-test-azure.bicep to ${ARM_TEMPLATE_FILE} ..."
 az bicep build --file conf-test-azure.bicep --outfile "${ARM_TEMPLATE_FILE}"
 
 echo "Creating azure deployment ${DEPLOY_NAME} in ${DEPLOY_LOCATION} and resource prefix ${PREFIX}-* ..."
+echo "SDK_AUTH_SP_ID: " ${SDK_AUTH_SP_ID} 
 az deployment sub create --name "${DEPLOY_NAME}" --location "${DEPLOY_LOCATION}" --template-file "${ARM_TEMPLATE_FILE}" -p namePrefix="${PREFIX}" -p adminId="${ADMIN_ID}" -p certAuthSpId="${CERT_AUTH_SP_ID}" -p sdkAuthSpId="${SDK_AUTH_SP_ID}" -p rgLocation="${DEPLOY_LOCATION}" -p sqlServerAdminPassword="${SQL_SERVER_ADMIN_PASSWORD}"
 
 echo "Sleeping for 5s to allow created ARM deployment info to propagate to query endpoints ..."
@@ -391,13 +393,17 @@ AKV_SPAUTH_SP_NAME="${PREFIX}-akv-spauth-conf-test-sp"
 echo "Creating service principal ${AKV_SPAUTH_SP_NAME} for use with KeyVault ${KEYVAULT_NAME}"
 { read AKV_SPAUTH_SP_CLIENT_ID ; read AKV_SPAUTH_SP_CLIENT_SECRET ; } <  <(az ad sp create-for-rbac --name ${AKV_SPAUTH_SP_NAME} --years 1 --query "[appId,password]" -otsv)
 
+echo "AKV_SPAUTH_SP_CLIENT_ID: " ${AKV_SPAUTH_SP_CLIENT_ID}
 # Give the service principal read access to the KeyVault Secrets
 AKV_SPAUTH_SP_OBJECTID="$(az ad sp show --id ${AKV_SPAUTH_SP_CLIENT_ID} --query id -otsv)"
+echo "AKV_SPAUTH_SP_OBJECTID: " ${AKV_SPAUTH_SP_OBJECTID}
+echo "KEYVAULT_NAME: " ${KEYVAULT_NAME}
+echo "RESOURCE_GROUP_NAME: " ${RESOURCE_GROUP_NAME}
 az keyvault set-policy --name "${KEYVAULT_NAME}" -g "${RESOURCE_GROUP_NAME}" --secret-permissions get list --object-id "${AKV_SPAUTH_SP_OBJECTID}"
 
 # Update service principal credentials and roles for created resources
 echo "Creating ${CERT_AUTH_SP_NAME} certificate ..."
-az ad sp credential reset --id "${CERT_AUTH_SP_ID}" --create-cert --cert "${KEYVAULT_CERT_NAME}" --keyvault "${KEYVAULT_NAME}"
+az ad sp credential reset --name "${CERT_AUTH_SP_NAME}" --create-cert --cert "${KEYVAULT_CERT_NAME}" --keyvault "${KEYVAULT_NAME}"
 
 # Add an EventGrid role to the SDK auth Service Principal so that it can be reused for the EventGrid binding conformance tests.
 EVENT_GRID_SCOPE="/subscriptions/${SUB_ID}/resourceGroups/${RESOURCE_GROUP_NAME}/providers/Microsoft.EventGrid/topics/${EVENT_GRID_TOPIC_NAME}"
@@ -531,7 +537,7 @@ echo export ${KEYVAULT_CERT_NAME}=\"${KEYVAULT_CERT_FILE}\" >> "${ENV_CONFIG_FIL
 echo export ${KEYVAULT_NAME_VAR_NAME}=\"${KEYVAULT_NAME}\" >> "${ENV_CONFIG_FILENAME}"
 az keyvault secret set --name "${KEYVAULT_NAME_VAR_NAME}" --vault-name "${KEYVAULT_NAME}" --value "${KEYVAULT_NAME}"
 
-KEYVAULT_TENANT_ID="$(az ad sp list --display-name "${CERT_AUTH_SP_NAME}" --query "[].appOwnerOrganizationId" --output tsv)"
+KEYVAULT_TENANT_ID="$(az ad sp list --display-name "${CERT_AUTH_SP_NAME}" --query "[].appOwnerTenantId" --output tsv)"
 echo export ${KEYVAULT_TENANT_ID_VAR_NAME}=\"${KEYVAULT_TENANT_ID}\" >> "${ENV_CONFIG_FILENAME}"
 az keyvault secret set --name "${KEYVAULT_TENANT_ID_VAR_NAME}" --vault-name "${KEYVAULT_NAME}" --value "${KEYVAULT_TENANT_ID}"
 
