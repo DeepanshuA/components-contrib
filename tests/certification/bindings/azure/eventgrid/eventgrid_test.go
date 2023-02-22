@@ -88,7 +88,7 @@ func TestEventGrid(t *testing.T) {
 		optionsBytes, marshalErr := json.Marshal(requestOptions)
 		if marshalErr != nil {
 			// return fmt.Errorf("%w", marshalErr)
-			ctx.Logf("%w", marshalErr)
+			// logger.("%w", marshalErr)
 		}
 		return func(ctx flow.Context) error {
 			client, err := daprsdk.NewClientWithPort(strconv.Itoa(currentGRPCPort))
