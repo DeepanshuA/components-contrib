@@ -8,7 +8,7 @@ import { writeFileSync } from 'node:fs'
 const components = {
     'bindings.azure.blobstorage': {
         conformance: true,
-        // certification: true,
+        certification: true,
         requiredSecrets: [
             'AzureBlobStorageAccount',
             'AzureBlobStorageAccessKey',
@@ -20,7 +20,7 @@ const components = {
     },
     'bindings.azure.cosmosdb': {
         conformance: true,
-        // certification: true,
+        certification: true,
         requiredSecrets: [
             'AzureCosmosDB',
             'AzureCosmosDBMasterKey',
@@ -50,7 +50,7 @@ const components = {
     },
     'bindings.azure.eventhubs': {
         conformance: true,
-        // certification: true,
+        certification: true,
         requiredSecrets: [
             'AzureEventHubsBindingsConnectionString',
             'AzureBlobStorageAccount',
@@ -71,12 +71,12 @@ const components = {
     },
     'bindings.azure.servicebusqueues': {
         conformance: true,
-        // certification: true,
+        certification: true,
         requiredSecrets: ['AzureServiceBusConnectionString'],
     },
     'bindings.azure.storagequeues': {
         conformance: true,
-        // certification: true,
+        certification: true,
         requiredSecrets: [
             'AzureBlobStorageAccessKey',
             'AzureBlobStorageAccount',
@@ -85,10 +85,10 @@ const components = {
     },
     'bindings.cron': {
         conformance: true,
-        // certification: true,
+        certification: true,
     },
     'bindings.dubbo': {
-        // certification: true,
+        certification: true,
     },
     'bindings.http': {
         conformance: true,
@@ -98,7 +98,7 @@ const components = {
         conformanceSetup: 'conformance-bindings.influx-setup.sh',
     },
     'bindings.kafka': {
-        // certification: true,
+        certification: true,
     },
     'bindings.kafka-confluent': {
         conformance: true,
@@ -113,7 +113,7 @@ const components = {
         conformanceSetup: 'docker-compose.sh kubemq',
     },
     'bindings.localstorage': {
-        // certification: true,
+        certification: true,
     },
     'bindings.mqtt3-emqx': {
         conformance: true,
@@ -129,16 +129,16 @@ const components = {
     },
     'bindings.postgres': {
         conformance: true,
-        // certification: true,
+        certification: true,
         conformanceSetup: 'docker-compose.sh postgresql',
     },
     'bindings.rabbitmq': {
         conformance: true,
-        // certification: true,
+        certification: true,
         conformanceSetup: 'docker-compose.sh rabbitmq',
     },
     'bindings.redis': {
-        // certification: true,
+        certification: true,
     },
     'bindings.redis.v6': {
         conformance: true,
@@ -157,7 +157,7 @@ const components = {
         conformanceSetup: 'docker-compose.sh redis7 redis',
     },
     'pubsub.aws.snssqs': {
-        // certification: true,
+        certification: true,
         requireAWSCredentials: true,
         requireTerraform: true,
         certificationSetup: 'certification-pubsub.aws.snssqs-setup.sh',
@@ -176,7 +176,7 @@ const components = {
     },
     'pubsub.azure.eventhubs': {
         conformance: true,
-        // certification: true,
+        certification: true,
         requiredSecrets: [
             'AzureEventHubsPubsubTopicActiveConnectionString',
             'AzureEventHubsPubsubNamespace',
@@ -200,7 +200,7 @@ const components = {
     },
     'pubsub.azure.servicebus.topics': {
         conformance: true,
-        // certification: true,
+        certification: true,
         requiredSecrets: [
             'AzureServiceBusConnectionString',
             'AzureServiceBusNamespace',
@@ -221,7 +221,7 @@ const components = {
         conformanceSetup: 'docker-compose.sh jetstream',
     },
     'pubsub.kafka': {
-        // certification: true,
+        certification: true,
     },
     'pubsub.kafka-confluent': {
         conformance: true,
@@ -236,7 +236,7 @@ const components = {
         conformanceSetup: 'docker-compose.sh kubemq',
     },
     'pubsub.mqtt3': {
-        // certification: true,
+        certification: true,
     },
     'pubsub.mqtt3-emqx': {
         conformance: true,
@@ -252,12 +252,12 @@ const components = {
     },
     'pubsub.pulsar': {
         conformance: true,
-        // certification: true,
+        certification: true,
         conformanceSetup: 'docker-compose.sh pulsar',
     },
     'pubsub.rabbitmq': {
         conformance: true,
-        // certification: true,
+        certification: true,
         conformanceSetup: 'docker-compose.sh rabbitmq',
     },
     'pubsub.redis.v6': {
@@ -274,7 +274,7 @@ const components = {
         conformanceSetup: 'docker-compose.sh solace',
     },
     'secretstores.azure.keyvault': {
-        // certification: true,
+        certification: true,
         requiredSecrets: [
             'AzureKeyVaultName',
             'AzureKeyVaultSecretStoreTenantId',
@@ -306,7 +306,7 @@ const components = {
     },
     'secretstores.hashicorp.vault': {
         conformance: true,
-        // certification: true,
+        certification: true,
         conformanceSetup: 'docker-compose.sh hashicorp-vault vault',
     },
     'secretstores.kubernetes': {
@@ -316,14 +316,14 @@ const components = {
     },
     'secretstores.local.env': {
         conformance: true,
-        // certification: true,
+        certification: true,
     },
     'secretstores.local.file': {
         conformance: true,
-        // certification: true,
+        certification: true,
     },
     'state.aws.dynamodb': {
-        // certification: true,
+        certification: true,
         requireAWSCredentials: true,
         requireTerraform: true,
         certificationSetup: 'certification-state.aws.dynamodb-setup.sh',
@@ -338,7 +338,7 @@ const components = {
     },
     'state.azure.blobstorage': {
         conformance: true,
-        // certification: true,
+        certification: true,
         requiredSecrets: [
             'AzureBlobStorageAccount',
             'AzureBlobStorageAccessKey',
@@ -350,7 +350,7 @@ const components = {
     },
     'state.azure.cosmosdb': {
         conformance: true,
-        // certification: true,
+        certification: true,
         requiredSecrets: [
             'AzureCosmosDBMasterKey',
             'AzureCosmosDBUrl',
@@ -372,7 +372,7 @@ const components = {
         conformanceDestroy: 'conformance-state.azure.sql-destroy.sh',
     },
     'state.azure.tablestorage': {
-        // certification: true,
+        certification: true,
         requiredSecrets: [
             'AzureBlobStorageAccount',
             'AzureBlobStorageAccessKey',
@@ -397,7 +397,7 @@ const components = {
     },
     'state.cassandra': {
         conformance: true,
-        // certification: true,
+        certification: true,
         conformanceSetup: 'docker-compose.sh cassandra',
     },
     'state.cloudflare.workerskv': {
@@ -409,7 +409,7 @@ const components = {
     },
     'state.cockroachdb': {
         conformance: true,
-        // certification: true,
+        certification: true,
         conformanceSetup: 'docker-compose.sh cockroachdb',
     },
     'state.in-memory': {
@@ -417,16 +417,16 @@ const components = {
     },
     'state.memcached': {
         conformance: true,
-        // certification: true,
+        certification: true,
         conformanceSetup: 'docker-compose.sh memcached',
     },
     'state.mongodb': {
         conformance: true,
-        // certification: true,
+        certification: true,
         mongoDbVersion: '4.2',
     },
     'state.mysql': {
-        // certification: true,
+        certification: true,
     },
     'state.mysql.mariadb': {
         conformance: true,
@@ -438,11 +438,11 @@ const components = {
     },
     'state.postgresql': {
         conformance: true,
-        // certification: true,
+        certification: true,
         conformanceSetup: 'docker-compose.sh postgresql',
     },
     'state.redis': {
-        // certification: true,
+        certification: true,
     },
     'state.redis.v6': {
         conformance: true,
@@ -458,11 +458,11 @@ const components = {
     },
     'state.sqlite': {
         conformance: true,
-        // certification: true,
+        certification: true,
     },
     'state.sqlserver': {
         conformance: true,
-        // certification: true,
+        certification: true,
         conformanceSetup: 'docker-compose.sh sqlserver',
         requiredSecrets: ['AzureSqlServerConnectionString'],
     },
