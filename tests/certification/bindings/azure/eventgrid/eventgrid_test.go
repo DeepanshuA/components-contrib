@@ -14,14 +14,15 @@ limitations under the License.
 package azureeventgrid_test
 
 import (
-	// "fmt"
+	"fmt"
 	// "io"
 	// "net/http"
 	// "os"
-	"os/exec"
+	// "os/exec"
+	"encoding/json"
+	"strconv"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
+	"time"
 
 	"github.com/dapr/components-contrib/bindings"
 	eventgridbinding "github.com/dapr/components-contrib/bindings/azure/eventgrid"
@@ -30,13 +31,16 @@ import (
 	secretstores_loader "github.com/dapr/dapr/pkg/components/secretstores"
 	"github.com/dapr/dapr/pkg/runtime"
 	dapr_testing "github.com/dapr/dapr/pkg/testing"
-	// daprsdk "github.com/dapr/go-sdk/client"
+	daprsdk "github.com/dapr/go-sdk/client"
 	"github.com/dapr/kit/logger"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	// "github.com/dapr/kit/ptr"
 
 	"github.com/dapr/components-contrib/tests/certification/embedded"
 	"github.com/dapr/components-contrib/tests/certification/flow"
 	"github.com/dapr/components-contrib/tests/certification/flow/sidecar"
+	"github.com/dapr/components-contrib/tests/certification/flow/watcher"
 	// "github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	// "github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	// "github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
@@ -52,38 +56,7 @@ import (
 // 	defer client.Close()
 // }
 
-// sendAndReceive := func(metadata map[string]string, messages ...*watcher.Watcher) flow.Runnable {
-// 	return func(ctx flow.Context) error {
-// 		client, err := daprsdk.NewClientWithPort(strconv.Itoa(grpcPort))
-// 		require.NoError(t, err, "dapr init failed")
-
-// 		// Define what is expected
-// 		outputmsg := make([]string, numMessages)
-// 		for i := 0; i < numMessages; i++ {
-// 			outputmsg[i] = fmt.Sprintf("output binding: Message %03d", i)
-// 		}
-// 		received.ExpectStrings(outputmsg...)
-// 		time.Sleep(20 * time.Second)
-
-// 		// Send events from output binding
-// 		for _, msg := range outputmsg {
-// 			ctx.Logf("Sending eventgrid messages: %q", msg)
-
-// 			err := client.InvokeOutputBinding(
-// 				ctx, &dapr.InvokeBindingRequest{
-// 					Name:      "azure-eventgrid",
-// 					Operation: "create",
-// 					Data:      [{"id": "1", "eventType": "recordInserted", "subject": "myapp/vehicles/motorcycles", "eventTime": "2023-02-15 10:40:47 AM", "data":{ "make": "HondaCity", "model": "Monster"},"dataVersion": "1.0"}],
-// 					// Metadata:  metadata,
-// 				})
-// 			require.NoError(ctx, err, "error publishing message")
-// 		}
-
-// 		// Assert the observed messages
-// 		received.Assert(ctx, time.Minute)
-// 		return nil
-// 	}
-// }
+const numMessages = 100
 
 func TestEventGrid(t *testing.T) {
 	ports, err := dapr_testing.GetFreePorts(2)
@@ -93,14 +66,64 @@ func TestEventGrid(t *testing.T) {
 	currentHTTPPort := ports[1]
 	// appPort := ports[2]
 
-	regiterRbacPermissions := func(ctx flow.Context) error {
-		output, err := exec.Command("/bin/sh", "sp_rbac_permissions.sh").Output()
-		assert.Nil(t, err, "Error in sp_rbac_permissions.sh.:\n%v; %s", err, string(output))
-		return nil
+	// regiterRbacPermissions := func(ctx flow.Context) error {
+	// 	output, err := exec.Command("/bin/sh", "sp_rbac_permissions.sh").Output()
+	// 	assert.Nil(t, err, "Error in sp_rbac_permissions.sh.:\n%v; %s", err, string(output))
+	// 	return nil
+	// }
+	received := watcher.NewUnordered()
+	sendAndReceive := func(messages ...*watcher.Watcher) flow.Runnable {
+		requestOptions := make(map[string]interface{})
+
+		requestOptions["id"] = "1"
+		requestOptions["eventType"] = "recordInserted"
+		requestOptions["subject"] = "myapp/vehicles/motorcycles"
+		requestOptions["eventTime"] = "2023-02-15 10:40:47 AM"
+		data := make(map[string]interface{})
+		data["make"] = "HondaCity"
+		data["model"] = "Monster"
+		requestOptions["data"] = data
+		requestOptions["dataVersion"] = "1.0"
+
+		optionsBytes, marshalErr := json.Marshal(requestOptions)
+		if marshalErr != nil {
+			return fmt.Errorf("%w", marshalErr)
+		}
+		return func(ctx flow.Context) error {
+			client, err := daprsdk.NewClientWithPort(strconv.Itoa(currentGRPCPort))
+			require.NoError(t, err, "dapr init failed")
+
+			// Define what is expected
+			outputmsg := make([]string, numMessages)
+			for i := 0; i < numMessages; i++ {
+				outputmsg[i] = fmt.Sprintf("output binding: Message %03d", i)
+			}
+			received.ExpectStrings(outputmsg...)
+			time.Sleep(20 * time.Second)
+
+			// Send events from output binding
+			for _, msg := range outputmsg {
+				ctx.Logf("Sending eventgrid messages: %q", msg)
+
+				err := client.InvokeOutputBinding(
+					ctx, &daprsdk.InvokeBindingRequest{
+						Name:      "azure-eventgrid",
+						Operation: "create",
+						Data:      optionsBytes,
+						// [{"id": "1", "eventType": "recordInserted", "subject": "myapp/vehicles/motorcycles", "eventTime": "2023-02-15 10:40:47 AM", "data":{ "make": "HondaCity", "model": "Monster"},"dataVersion": "1.0"}],
+						// Metadata:  metadata,
+					})
+				require.NoError(ctx, err, "error publishing message")
+			}
+
+			// Assert the observed messages
+			received.Assert(ctx, time.Minute)
+			return nil
+		}
 	}
 
 	flow.New(t, "eventgrid binding authentication using service principal").
-		Step("Register Rbac permissions", regiterRbacPermissions).
+		// Step("Register Rbac permissions", regiterRbacPermissions).
 		Step(sidecar.Run("sidecar",
 			embedded.WithoutApp(),
 			embedded.WithDaprGRPCPort(currentGRPCPort),
@@ -108,6 +131,7 @@ func TestEventGrid(t *testing.T) {
 			embedded.WithComponentsPath("./components/serviceprincipal"),
 			componentRuntimeOptions(),
 		)).
+		Step("Send and recieve", sendAndReceive()).
 		Run()
 }
 
