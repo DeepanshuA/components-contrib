@@ -232,6 +232,8 @@ func (a *AzureEventGrid) Invoke(ctx context.Context, req *bindings.InvokeRequest
 	request.Header.Set("Content-Type", contenttype.CloudEventContentType)
 	request.Header.Set("aeg-sas-key", a.metadata.AccessKey)
 	request.Header.Set("User-Agent", "dapr/"+logger.DaprVersion)
+	// request.Header.Set("Host", a.metadata.TopicEndpoint)
+	request.SetHost(a.metadata.TopicEndpoint)
 	request.SetRequestURI(a.metadata.TopicEndpoint)
 	request.SetBody(req.Data)
 
