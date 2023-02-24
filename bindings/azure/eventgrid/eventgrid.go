@@ -239,6 +239,7 @@ func (a *AzureEventGrid) Invoke(ctx context.Context, req *bindings.InvokeRequest
 	defer fasthttp.ReleaseResponse(response)
 
 	client := &fasthttp.Client{WriteTimeout: time.Second * 10}
+	a.logger.Infof("request: %v", request)
 	err = client.Do(request, response)
 	if err != nil {
 		err = fmt.Errorf("request error: %w", err)
