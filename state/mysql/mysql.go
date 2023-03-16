@@ -154,12 +154,12 @@ func (m *MySQL) parseMetadata(md map[string]string) error {
 		MetadataTableName:        defaultMetadataTableName,
 		CleanupIntervalInSeconds: ptr.Of(defaultCleanupInterval * time.Second),
 	}
-
+	fmt.Printf("CleanupIntervalInSeconds at 1 is %v", meta.CleanupIntervalInSeconds)
 	err := metadata.DecodeMetadata(md, &meta)
 	if err != nil {
 		return err
 	}
-
+	fmt.Printf("CleanupIntervalInSeconds at 2 is %v", meta.CleanupIntervalInSeconds)
 	if meta.TableName != "" {
 		// Sanitize the table name
 		if !validIdentifier(meta.TableName) {
@@ -204,6 +204,10 @@ func (m *MySQL) parseMetadata(md map[string]string) error {
 		} else {
 			m.cleanupInterval = nil
 		}
+		fmt.Printf("CleanupIntervalInSeconds at 1 is %v", meta.CleanupIntervalInSeconds)
+	} else {
+		m.cleanupInterval = meta.CleanupIntervalInSeconds
+		fmt.Printf("cleanupInterval at 3 is %v", m.cleanupInterval)
 	}
 
 	if meta.PemPath != "" {
