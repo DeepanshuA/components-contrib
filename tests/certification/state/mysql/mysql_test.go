@@ -453,7 +453,7 @@ func TestMySQL(t *testing.T) {
 					defer storeObj.Close()
 
 					cleanupInterval := storeObj.CleanupInterval()
-					_ = assert.Equal(t, time.Duration(0), *cleanupInterval)
+					_ = assert.Nil(t, cleanupInterval)
 				})
 
 			})
