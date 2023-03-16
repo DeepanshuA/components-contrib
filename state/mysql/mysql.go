@@ -94,13 +94,13 @@ type MySQL struct {
 }
 
 type mySQLMetadata struct {
-	TableName                string
-	SchemaName               string
-	ConnectionString         string
-	Timeout                  int
-	PemPath                  string
-	MetadataTableName        string
-	CleanupIntervalInSeconds *time.Duration
+	TableName         string
+	SchemaName        string
+	ConnectionString  string
+	Timeout           int
+	PemPath           string
+	MetadataTableName string
+	CleanupInterval   *time.Duration
 }
 
 // NewMySQLStateStore creates a new instance of MySQL state store.
@@ -149,17 +149,17 @@ func (m *MySQL) Init(ctx context.Context, metadata state.Metadata) error {
 
 func (m *MySQL) parseMetadata(md map[string]string) error {
 	meta := mySQLMetadata{
-		TableName:                defaultTableName,
-		SchemaName:               defaultSchemaName,
-		MetadataTableName:        defaultMetadataTableName,
-		CleanupIntervalInSeconds: ptr.Of(defaultCleanupInterval * time.Second),
+		TableName:         defaultTableName,
+		SchemaName:        defaultSchemaName,
+		MetadataTableName: defaultMetadataTableName,
+		CleanupInterval:   ptr.Of(defaultCleanupInterval * time.Second),
 	}
-	fmt.Printf("CleanupIntervalInSeconds at 1 is %v", meta.CleanupIntervalInSeconds)
+	fmt.Printf("CleanupIntervalInSeconds at 1 is %v", meta.CleanupInterval)
 	err := metadata.DecodeMetadata(md, &meta)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("CleanupIntervalInSeconds at 2 is %v", meta.CleanupIntervalInSeconds)
+	fmt.Printf("CleanupIntervalInSeconds at 2 is %v", meta.CleanupInterval)
 	if meta.TableName != "" {
 		// Sanitize the table name
 		if !validIdentifier(meta.TableName) {
@@ -204,9 +204,9 @@ func (m *MySQL) parseMetadata(md map[string]string) error {
 		} else {
 			m.cleanupInterval = nil
 		}
-		fmt.Printf("CleanupIntervalInSeconds at 1 is %v", meta.CleanupIntervalInSeconds)
+		fmt.Printf("CleanupIntervalInSeconds at 4 is %v", meta.CleanupInterval)
 	} else {
-		m.cleanupInterval = meta.CleanupIntervalInSeconds
+		m.cleanupInterval = meta.CleanupInterval
 		fmt.Printf("cleanupInterval at 3 is %v", m.cleanupInterval)
 	}
 
