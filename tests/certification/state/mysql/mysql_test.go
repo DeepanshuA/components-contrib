@@ -633,7 +633,7 @@ func populateTTLRecords(ctx context.Context, dbClient *sql.DB) error {
 	for _, row := range rows {
 		// _, err := dbClient.ExecContext(queryCtx, "INSERT INTO ttl_state (key, value, isbinary, expiredate) VALUES (?, ?, ?, ?)", row[0], row[1], row[2], row[3])
 		query := fmt.Sprintf("INSERT INTO ttl_state (id, value, isbinary, eTag, expiredate) VALUES (?, ?, ?, '', %s)", row[3])
-		_, err := dbClient.ExecContext(ctx, query, row[0], row[1], row[2])
+		_, err := dbClient.ExecContext(queryCtx, query, row[0], row[1], row[2])
 		if err != nil {
 			return err
 		}
