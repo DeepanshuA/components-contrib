@@ -607,7 +607,8 @@ func TestMySQL(t *testing.T) {
 
 func populateTTLRecords(ctx context.Context, dbClient *sql.DB) error {
 	// Insert 10 records that have expired, and 10 that will expire in 4 seconds
-	exp := "CURRENT_TIMESTAMP - INTERVAL 1 MINUTE"
+	// exp := "CURRENT_TIMESTAMP - INTERVAL 1 MINUTE"
+	exp := "DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 1 minute)"
 	rows := make([][]any, 20)
 	for i := 0; i < 10; i++ {
 		rows[i] = []any{
@@ -617,7 +618,8 @@ func populateTTLRecords(ctx context.Context, dbClient *sql.DB) error {
 			exp,
 		}
 	}
-	exp = "CURRENT_TIMESTAMP + INTERVAL 4 SECOND"
+	// exp = "CURRENT_TIMESTAMP + INTERVAL 4 SECOND"
+	exp = "DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 4 second)"
 	for i := 0; i < 10; i++ {
 		rows[i+10] = []any{
 			fmt.Sprintf("notexpired_%d", i),
@@ -629,7 +631,9 @@ func populateTTLRecords(ctx context.Context, dbClient *sql.DB) error {
 	queryCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
 	defer cancel()
 	for _, row := range rows {
-		_, err := dbClient.ExecContext(queryCtx, "INSERT INTO ttl_state (key, value, isbinary, expiredate) VALUES (?, ?, ?, ?)", row[0], row[1], row[2], row[3])
+		// _, err := dbClient.ExecContext(queryCtx, "INSERT INTO ttl_state (key, value, isbinary, expiredate) VALUES (?, ?, ?, ?)", row[0], row[1], row[2], row[3])
+		query := fmt.Sprintf("INSERT INTO ttl_state (id, value, isbinary, eTag, expiredate) VALUES (?, ?, ?, '', %s)", row[3])
+		_, err := dbClient.ExecContext(ctx, query, row[0], row[1], row[2])
 		if err != nil {
 			return err
 		}
