@@ -282,9 +282,9 @@ func (m *MySQL) finishInit(ctx context.Context, db *sql.DB) error {
 		gc, err := sqlCleanup.ScheduleGarbageCollector(sqlCleanup.GCOptions{
 			Logger: m.logger,
 			UpdateLastCleanupQuery: fmt.Sprintf(`INSERT INTO %[1]s (id, value)
-			VALUES ('last-cleanup', CURRENT_TIMESTAMP(3))
+			VALUES ('last-cleanup', NOW(3))
 		  ON DUPLICATE KEY UPDATE
-			value = IF(CURRENT_TIMESTAMP(3) > DATE_ADD(value, INTERVAL ?*1000 MICROSECOND), CURENT_TIMESTAMP(3), value)`,
+			value = IF(NOW(3) > DATE_ADD(value, INTERVAL ?*1000 MICROSECOND), NOW(3), value)`,
 				m.metadataTableName),
 			DeleteExpiredValuesQuery: fmt.Sprintf(
 				`DELETE FROM %s WHERE expiredate IS NOT NULL AND expiredate < CURRENT_TIMESTAMP`,
