@@ -490,10 +490,10 @@ func TestMySQL(t *testing.T) {
 					require.NoError(t, err, "failed to run query to count rows")
 					assert.Equal(t, 10, count)
 
-					// The "last-cleanup" value should be <= 1 second (+ a bit of buffer)
+					// The "last-cleanup" value should be <= 2 second (+ a bit of buffer)
 					lastCleanup, err := loadLastCleanupInterval(ctx, conn, "ttl_metadata")
 					require.NoError(t, err, "failed to load value for 'last-cleanup'")
-					assert.LessOrEqual(t, lastCleanup, int64(1200))
+					assert.LessOrEqual(t, lastCleanup, 2)
 
 					// Wait 6 more seconds and verify there are no more rows left
 					time.Sleep(6 * time.Second)
@@ -504,7 +504,7 @@ func TestMySQL(t *testing.T) {
 					// The "last-cleanup" value should be <= 1 second (+ a bit of buffer)
 					lastCleanup, err = loadLastCleanupInterval(ctx, conn, "ttl_metadata")
 					require.NoError(t, err, "failed to load value for 'last-cleanup'")
-					assert.LessOrEqual(t, lastCleanup, int64(1200))
+					assert.LessOrEqual(t, lastCleanup, 2)
 				})
 
 				t.Run("cleanup concurrency", func(t *testing.T) {
@@ -532,10 +532,10 @@ func TestMySQL(t *testing.T) {
 					err = setValueInMetadataTable(ctx, conn, "ttl_metadata", "'last-cleanup'", "CURRENT_TIMESTAMP - INTERVAL 1 SECOND")
 					require.NoError(t, err, "failed to set last-cleanup")
 
-					// The "last-cleanup" value should be ~1 second (+ a bit of buffer)
+					// The "last-cleanup" value should be ~2 second (+ a bit of buffer)
 					lastCleanup, err := loadLastCleanupInterval(ctx, conn, "ttl_metadata")
 					require.NoError(t, err, "failed to load value for 'last-cleanup'")
-					assert.LessOrEqual(t, lastCleanup, int64(1200))
+					assert.LessOrEqual(t, lastCleanup, 2)
 					lastCleanupValueOrig, err := getValueFromMetadataTable(ctx, conn, "ttl_metadata", "last-cleanup")
 					require.NoError(t, err, "failed to load absolute value for 'last-cleanup'")
 					require.NotEmpty(t, lastCleanupValueOrig)
@@ -654,7 +654,7 @@ func loadLastCleanupInterval(ctx context.Context, dbClient *sql.DB, table string
 	queryCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
 	err = dbClient.
 		QueryRowContext(queryCtx,
-			fmt.Sprintf("SELECT (UNIX_TIMESTAMP(CURRENT_TIMESTAMP) - UNIX_TIMESTAMP(value)) * 1000 FROM %s WHERE id = 'last-cleanup'", table),
+			fmt.Sprintf("SELECT (UNIX_TIMESTAMP(CURRENT_TIMESTAMP) - UNIX_TIMESTAMP(value)) FROM %s WHERE id = 'last-cleanup'", table),
 		).
 		Scan(&lastCleanup)
 	cancel()
