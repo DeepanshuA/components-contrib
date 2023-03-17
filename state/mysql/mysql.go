@@ -284,7 +284,7 @@ func (m *MySQL) finishInit(ctx context.Context, db *sql.DB) error {
 			UpdateLastCleanupQuery: fmt.Sprintf(`INSERT INTO %[1]s (id, value)
 			VALUES ('last-cleanup', CURRENT_TIMESTAMP)
 		  ON DUPLICATE KEY UPDATE
-			value = IF((UNIX_TIMESTAMP(CURRENT_TIMESTAMP) - UNIX_TIMESTAMP(value)) * 1000 >= $1, 
+			value = IF((UNIX_TIMESTAMP(CURRENT_TIMESTAMP) - UNIX_TIMESTAMP(value)) * 1000 >= ?, 
 					  CURRENT_TIMESTAMP, value)`,
 				m.metadataTableName),
 			DeleteExpiredValuesQuery: fmt.Sprintf(
