@@ -285,8 +285,6 @@ func (m *MySQL) finishInit(ctx context.Context, db *sql.DB) error {
 			VALUES ('last-cleanup', CURRENT_TIMESTAMP(3))
 		  ON DUPLICATE KEY UPDATE
 			value = IF(CURRENT_TIMESTAMP(3) > DATE_ADD(value, INTERVAL ?*1000 MICROSECOND), CURENT_TIMESTAMP(3), value)`,
-				// value = IF((UNIX_TIMESTAMP(CURRENT_TIMESTAMP) - UNIX_TIMESTAMP(value)) * 1000 >= ?,
-				// 		  CURRENT_TIMESTAMP, value)`,
 				m.metadataTableName),
 			DeleteExpiredValuesQuery: fmt.Sprintf(
 				`DELETE FROM %s WHERE expiredate IS NOT NULL AND expiredate < CURRENT_TIMESTAMP`,
