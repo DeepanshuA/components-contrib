@@ -654,7 +654,7 @@ func loadLastCleanupInterval(ctx context.Context, dbClient *sql.DB, table string
 	queryCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
 	err = dbClient.
 		QueryRowContext(queryCtx,
-			fmt.Sprintf("SELECT UNIX_TIMESTAMP(NOW(3)) - UNIX_TIMESTAMP(value) FROM %s WHERE id = 'last-cleanup'", table),
+			fmt.Sprintf("SELECT UNIX_TIMESTAMP(NOW(3)) - UNIX_TIMESTAMP(value) AS lastCleanup FROM %s WHERE id = 'last-cleanup'", table),
 		).
 		Scan(&lastCleanup)
 	cancel()
