@@ -650,14 +650,16 @@ func countRowsInTable(ctx context.Context, dbClient *sql.DB, table string) (coun
 	return
 }
 
-func loadLastCleanupInterval(ctx context.Context, dbClient *sql.DB, table string) (lastCleanup int64, err error) {
+func loadLastCleanupInterval(ctx context.Context, dbClient *sql.DB, table string) (lastCleanup int, err error) {
 	queryCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	lastCleanupf := 0.000
 	err = dbClient.
 		QueryRowContext(queryCtx,
-			fmt.Sprintf("SELECT UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(value) AS lastCleanup FROM %s WHERE id = 'last-cleanup'", table),
+			fmt.Sprintf("SELECT UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(value) AS lastClean FROM %s WHERE id = 'last-cleanup'", table),
 		).
-		Scan(&lastCleanup)
+		Scan(&lastCleanupf)
 	cancel()
+	lastCleanup = int(lastCleanupf)
 	if errors.Is(err, sql.ErrNoRows) {
 		err = nil
 	}
