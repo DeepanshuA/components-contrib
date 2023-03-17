@@ -680,7 +680,7 @@ func setValueInMetadataTable(ctx context.Context, dbClient *sql.DB, table, id, v
 func getValueFromMetadataTable(ctx context.Context, dbClient *sql.DB, table, key string) (value string, err error) {
 	queryCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
 	err = dbClient.
-		QueryRowContext(queryCtx, fmt.Sprintf("SELECT value FROM %s WHERE key = $1", table), key).
+		QueryRowContext(queryCtx, fmt.Sprintf("SELECT value FROM %s WHERE key = ?", table), key).
 		Scan(&value)
 	cancel()
 	if errors.Is(err, sql.ErrNoRows) {
