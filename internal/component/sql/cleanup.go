@@ -230,6 +230,7 @@ func (g *gc) updateLastCleanup(ctx context.Context) (bool, error) {
 		}
 
 		n, err = res.RowsAffected()
+		g.log.Infof("=========================Rows affected: %d", n)
 		if err != nil {
 			return false, fmt.Errorf("failed to retrieve affected row count: %w", err)
 		}
