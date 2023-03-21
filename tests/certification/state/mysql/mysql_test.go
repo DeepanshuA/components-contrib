@@ -541,6 +541,7 @@ func TestMySQL(t *testing.T) {
 					require.NotEmpty(t, lastCleanupValueOrig)
 
 					// Trigger the background cleanup, which should do nothing because the last cleanup was < 3600s
+					log.Info("Testing CleanupExpired - no rows should be affected")
 					err = storeObj.CleanupExpired()
 					require.NoError(t, err, "CleanupExpired returned an error")
 
