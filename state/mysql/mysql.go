@@ -191,8 +191,7 @@ func (m *MySQL) parseMetadata(md map[string]string) error {
 	m.connectionString = meta.ConnectionString
 
 	// Cleanup interval
-	s, ok := md[cleanupIntervalKey]
-	if ok && s != "" {
+	if s := md[cleanupIntervalKey]; s != "" {
 		cleanupIntervalInSec, err := strconv.ParseInt(s, 10, 0)
 		if err != nil {
 			return fmt.Errorf("invalid value for '%s': %s", cleanupIntervalKey, s)
@@ -383,12 +382,12 @@ func (m *MySQL) ensureStateTable(ctx context.Context, schemaName, stateTableName
 	if !columnExists {
 		m.logger.Infof("Adding expiredate column to MySql state table '%s'", stateTableName)
 		_, err = m.db.ExecContext(ctx, fmt.Sprintf(
-			`ALTER TABLE %s ADD COLUMN expiredate TIMESTAMP NULL;`, stateTableName))
+			`ALTER TABLE %s ADD COLUMN IF NOT EXISTS expiredate TIMESTAMP NULL;`, stateTableName))
 		if err != nil {
 			return err
 		}
 		_, err = m.db.ExecContext(ctx, fmt.Sprintf(
-			`CREATE INDEX expiredate_idx ON %s (expiredate);`, stateTableName))
+			`CREATE INDEX IF NOT EXISTS expiredate_idx ON %s (expiredate);`, stateTableName))
 		if err != nil {
 			return err
 		}
