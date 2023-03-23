@@ -191,6 +191,7 @@ func (m *MySQL) parseMetadata(md map[string]string) error {
 	m.connectionString = meta.ConnectionString
 
 	// Cleanup interval
+	m.cleanupInterval = meta.CleanupInterval
 	if s := md[cleanupIntervalKey]; s != "" {
 		cleanupIntervalInSec, err := strconv.ParseInt(s, 10, 0)
 		if err != nil {
@@ -204,9 +205,6 @@ func (m *MySQL) parseMetadata(md map[string]string) error {
 			m.cleanupInterval = nil
 		}
 		fmt.Printf("CleanupIntervalInSeconds at 4 is %v", meta.CleanupInterval)
-	} else {
-		m.cleanupInterval = meta.CleanupInterval
-		fmt.Printf("cleanupInterval at 3 is %v", m.cleanupInterval)
 	}
 
 	if meta.PemPath != "" {
@@ -281,9 +279,9 @@ func (m *MySQL) finishInit(ctx context.Context, db *sql.DB) error {
 		gc, err := sqlCleanup.ScheduleGarbageCollector(sqlCleanup.GCOptions{
 			Logger: m.logger,
 			UpdateLastCleanupQuery: fmt.Sprintf(`INSERT INTO %[1]s (id, value)
-			VALUES ('last-cleanup', NOW())
+			VALUES ('last-cleanup', CURRENT_TIMESTAMP)
 		  ON DUPLICATE KEY UPDATE
-			value = IF(NOW() > DATE_ADD(value, INTERVAL ?*1000 MICROSECOND), NOW(), value)`,
+			value = IF(CURRENT_TIMESTAMP > DATE_ADD(value, INTERVAL ?*1000 MICROSECOND), CURRENT_TIMESTAMP, value)`,
 				m.metadataTableName),
 			DeleteExpiredValuesQuery: fmt.Sprintf(
 				`DELETE FROM %s WHERE expiredate IS NOT NULL AND expiredate < CURRENT_TIMESTAMP`,
